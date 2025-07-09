@@ -1,64 +1,72 @@
 #ifndef ASSET_MAN_HPP
 #define ASSET_MAN_HPP
 
-#include "Textures.hpp"
-#include "SpriteAnimations.hpp"
+#include <unordered_map>
+#include <memory>
+#include <algorithm>
+#include <string>
 
-
-// Add types here to include them in the offical assetManager. (! Should mostly handle the new types witout any code changes)
 enum AssetType {
-	TEXTURE,
-	SPRITESHEET,
-	Animated_Sprite,
-	Animated_Player,
-	Unknown_Asset
+	Texture,
+	Spritesheet,
+	Anim_Sprite,
+	Shader_Type,
+	Unkown_Asset
 };
 
 struct AssetEntry {
-	std::shared_ptr<void> ptr; // A void ptr (holds any type) eb sure to safetlys cast
-	AssetType type = Unknown_Asset;
-	std::string registryPath;
+	std::shared_ptr<void> ptr;
+	AssetType type = Unkown_Asset;
+
+	//Path vars;
+	std::string registryPath; // Should eventually change to a vec to store multiple paths
+	bool validatePath;
+
 };
 
+#include <Texture.hpp>
+#include <Shader.hpp>
 
 class AssetManager {
 public:
 	static AssetManager& get();
 
-	static void init(SDL_Renderer* renderer);
 	static void destroyAsset(const std::string& assetID);
 
+	// Outputs all loaded assets in readable format (command-line output)
 	static void listLoadedAssets();
 
-	template<typename T>
-	static void registerAsset(const std::string& assetID, const std::string& path, bool allowOverwrite = false);
-	static void registerAssetsFromManifest(const std::string& manifestPath, bool allowOverwrite = false);
+	template<typename T, typename... Args>
+	static void registerAsset(const std::string& assetID, Args&&... args);
+	void registerAssetsFromManifest(const std::string& manifestPath);
 
 	template<typename T>
 	static std::shared_ptr<T> load(const std::string& id, const std::string& path);
 
-	template<typename T>
-	static std::shared_ptr<T> use(const std::string& id);
+	template<typename T> 
+	std::shared_ptr<T> use(const std::string& assetID);
 
 	template<typename T>
 	static bool queryAsset(const std::string& assetID);
 	AssetEntry* getAssetEntry(const std::string& assetID);
 
-private:
+	// Individual registers:
+	static void registerAssetImpl(Texture2D, const std::string& ID, const std::string& filePath, bool overwrite=false);
+	static void registerAssetImpl(Shader, const std::string& assetID, const std::string& vertexPath, const std::string& fragmentPath, bool isFiles = true, bool overwrite = false);
 
+private:
 	static std::unordered_map<std::string, AssetEntry> assets;
-	static SDL_Renderer* renderer;
-	
+
 	AssetManager() = default;
 
 	template<typename T>
-	constexpr static AssetType deduceAssetType();
+	static constexpr AssetType deduceAssetType();
+
+
+	
 
 };
 
 #include "AssetManager.inl"
-
-
-
 
 #endif
