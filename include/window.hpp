@@ -42,10 +42,19 @@ public:
 	void startFrame();
 	void endFrame();
 
+	// Toggles:
+	bool toggleWireFrame();
+
+	// Callbacks:
+	void onResize(int width, int height);
+
 private:
 	double lastTime = glfwGetTime();
 	int frameCount;
 	double fpsTimer = 0.0f;
+
+	// GL optional states:
+	bool drawWireframe = false; 
 };
 
 class VFS {

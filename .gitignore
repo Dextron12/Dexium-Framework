@@ -1,5 +1,7 @@
 # Build Files
 /build/
+/Tests/Assets/*
+/src/main.cpp
 *.o
 *.obj
 *.so

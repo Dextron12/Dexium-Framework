@@ -14,11 +14,10 @@ template<typename T>
 std::shared_ptr<T> AssetManager::use(const std::string& id) {
 	auto it = assets.find(id);
 	if (it == assets.end()) {
+		
 		TraceLog(LOG_ERROR, "[Asset-Man]: Asset not found: '%s'", id.c_str());
 		return nullptr;
 	}
-
-	std::cout << it->first << std::endl;
 
 	AssetEntry& entry = it->second;
 

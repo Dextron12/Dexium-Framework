@@ -9,11 +9,11 @@ void TraceLog(int logLevel, const char* text, ...) {
 
 	switch (logLevel) {
 	case LOG_NONE: break;
-	case LOG_TRACE: std::printf("[Trace]: ");
-	case LOG_INFO: std::printf("[Info]: ");
-	case LOG_WARNING: std::printf("[Warning]: ");
-	case LOG_ERROR: std::printf("[Error]: ");
-	case LOG_FATAL: std::printf("[FATAL]: ");
+	case LOG_TRACE: std::printf("[Trace]: "); break;
+	case LOG_INFO: std::printf("[Info]: "); break;
+	case LOG_WARNING: std::printf("[Warning]: "); break;
+	case LOG_ERROR: std::printf("[Error]: "); break;
+	case LOG_FATAL: std::printf("[FATAL]: "); break;
 	default: break;
 	}
 
@@ -53,6 +53,15 @@ WindowContext::WindowContext(const char* windowTitle, const int windowWidth, con
 
 	//Otherwise, window was created successfully:
 	glViewport(0, 0, windowWidth, windowHeight);
+
+	glfwSetWindowUserPointer(window, this);
+
+	glfwSetFramebufferSizeCallback(window,
+		[](GLFWwindow* win, int width, int height) {
+			auto* ctx = static_cast<WindowContext*>(glfwGetWindowUserPointer(win));
+			if (ctx) ctx->onResize(width, height);
+		}
+	);
 
 	width = windowWidth; height = windowHeight;
 	appState = true;
@@ -98,6 +107,20 @@ void VFS::init() {
 	execPath = execPath.parent_path().parent_path(); // Should make it in project root.
 #endif
 
+}
+
+bool WindowContext::toggleWireFrame() {
+	drawWireframe = !drawWireframe;
+	glPolygonMode(GL_FRONT_AND_BACK, drawWireframe ? GL_LINE : GL_FILL);
+	TraceLog(LOG_INFO, "[WindowContext] WireFrame mode: %s\n", (drawWireframe ? "enabled" : "disabled"));
+	return drawWireframe;
+}
+
+void WindowContext::onResize(int width, int height) {
+	glViewport(0, 0, width, height);
+	this->width = width; this->height = height;
+
+	TraceLog(LOG_INFO, "Window FrameBuffer has resized");
 }
 
 std::unique_ptr<std::string> VFS::resolve(const std::string& relativePath) {

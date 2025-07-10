@@ -39,9 +39,6 @@ Shader::Shader(const std::string& vertex, const std::string& fragment, bool areF
 }
 
 void Shader::compile(){
-
-	std::printf("[Shader]: Compiling Shader Program\n");
-
 	const char* vShaderCode = vertexCode.c_str();
 	const char* fShaderCode = fragmentCode.c_str();
 
@@ -87,10 +84,6 @@ void Shader::compile(){
 }
 
 void Shader::use() {
-	if (this == nullptr) {
-		std::printf("[Error] [Shader Program]: No GL ID registered!\n");
-	}
-	std::printf("Using shader program: %d\n", ID);
 	glUseProgram(ID);
 }
 
