@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <memory>
 #include <algorithm>
+#include <vector>
+#include <functional>
 #include <string>
 
 enum AssetType {
@@ -15,58 +17,49 @@ enum AssetType {
 };
 
 struct AssetEntry {
-	std::shared_ptr<void> ptr;
-	AssetType type = Unkown_Asset;
+	AssetType type = AssetType::Unkown_Asset;
+	std::vector<std::string> registryPaths;
+	std::shared_ptr<void> ptr = nullptr;
 
-	//Path vars;
-	std::string registryPath; // Should eventually change to a vec to store multiple paths
-	bool validatePath;
+	bool fromFiles = true; // Load a file OR use raw data provided in the filePaths
+	bool validatePath = true; // When true, Uses VFS::resolve & VFS::exists to validate paths.
+};
 
+class AssetManager {
+public:
+	// SIngleton accessor
+	static AssetManager& getInstance() {
+		static AssetManager instance;
+		return instance;
+	}
+
+	AssetManager(const AssetManager&) = delete;
+	AssetManager& operator=(const AssetManager&) = delete;
+
+	void registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile = true, bool validate = true);
+
+	template<typename T>
+	std::shared_ptr<T> use(const std::string& id);
+
+	template <typename T>
+	void registerLoader(AssetType type, std::function<std::shared_ptr<T>(const AssetEntry&)> loader);
+
+	void unload(const std::string& id);
+	void clear();
+
+private:
+	AssetManager() = default;
+	~AssetManager() = default;
+
+	std::unordered_map<std::string, AssetEntry> assets;
+	std::unordered_map < AssetType, std::function<std::shared_ptr<void>(const AssetEntry&)>> loaders;
 };
 
 #include <Texture.hpp>
 #include <Shader.hpp>
 
-class AssetManager {
-public:
-	static AssetManager& get();
-
-	static void destroyAsset(const std::string& assetID);
-
-	// Outputs all loaded assets in readable format (command-line output)
-	static void listLoadedAssets();
-
-	template<typename T, typename... Args>
-	static void registerAsset(const std::string& assetID, Args&&... args);
-	void registerAssetsFromManifest(const std::string& manifestPath);
-
-	template<typename T>
-	static std::shared_ptr<T> load(const std::string& id, const std::string& path);
-
-	template<typename T> 
-	std::shared_ptr<T> use(const std::string& assetID);
-
-	template<typename T>
-	static bool queryAsset(const std::string& assetID);
-	AssetEntry* getAssetEntry(const std::string& assetID);
-
-	// Individual registers:
-	static void registerAssetImpl(Texture2D, const std::string& ID, const std::string& filePath, bool overwrite=false);
-	static void registerAssetImpl(Shader, const std::string& assetID, const std::string& vertexPath, const std::string& fragmentPath, bool isFiles = true, bool overwrite = false);
-
-private:
-	static std::unordered_map<std::string, AssetEntry> assets;
-
-	AssetManager() = default;
-
-	template<typename T>
-	static constexpr AssetType deduceAssetType();
+#include <AssetManager.inl>
 
 
-	
-
-};
-
-#include "AssetManager.inl"
 
 #endif

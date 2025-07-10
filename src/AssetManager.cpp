@@ -1,6 +1,111 @@
 
 #include <AssetManager.hpp>
 
+// Register Dexium default laoders on static init:
+namespace  {
+	struct DefaultLoaderRegistrar {
+		DefaultLoaderRegistrar() {
+			auto& mgr = AssetManager::getInstance();
+
+			// Texture2D Loader:
+			mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
+				//Check type:
+				if (entry.type != AssetType::Texture) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Texture2D");
+					return nullptr;
+				}
+				if (entry.registryPaths.empty()) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: Cannot create a Texture2D resource without a filePath");
+					return nullptr;
+				}
+				return std::make_shared<Texture2D>(entry.registryPaths[0]);
+			});
+
+
+			// Shader Loader:
+			mgr.registerLoader<Shader>(AssetType::Shader_Type, [](const AssetEntry& entry) -> std::shared_ptr<Shader> {
+				if (entry.type != AssetType::Shader_Type) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Shader");
+					return nullptr;
+				}
+				if (entry.registryPaths.size() < 2) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: A shader requiers a vertexPath & fragmentPath\n(OR: provide srcCode fo each as the path args)");
+					return nullptr;
+				}
+				auto ptr = std::make_shared<Shader>(entry.registryPaths[0], entry.registryPaths[1], entry.fromFiles);
+				ptr->compile();
+				return ptr;
+				});
+
+			// Add more Dexium Res loaders here when implemented!
+		}
+	};
+};
+
+static DefaultLoaderRegistrar __dexium_default_loaders;
+
+void AssetManager::registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile, bool validate) {
+	
+	// check for validation:
+	if (validate && fromFile) {
+		for (const std::string& file : paths){
+			if (!VFS::resolve(file)) {
+				TraceLog(LOG_ERROR, "Failed to resolve path: '%s' for asset: '%s'", file.c_str(), id.c_str());
+				return;
+			}
+		}
+	}
+
+	// Check if an entry already exists:
+	const auto& it = assets.find(id);
+	if (it != assets.end()) {
+		TraceLog(LOG_ERROR, "[Asset-Man]: Cannot re-register asset: '%s', it already is registered", id.c_str());
+		return;
+	}
+
+	// register entry:
+	AssetEntry entry;
+	entry.fromFiles = fromFile; entry.validatePath = validate;
+	entry.type = type;
+	entry.registryPaths = paths;
+	entry.ptr = nullptr;
+
+	assets.insert_or_assign(id, entry);
+}
+
+void AssetManager::unload(const std::string& id) {
+	//check if asset exists
+	const auto& it = assets.find(id);
+	if (it != assets.end()) {
+		TraceLog(LOG_INFO, "[Asset-Man]: Unloading Resource: '%s'", id.c_str());
+
+		//Check ptr' counts:
+		if (it->second.ptr.use_count() > 1) {
+			TraceLog(LOG_WARNING, "[Asset-Man]: Resource: '%s' still has '%d' references", id.c_str(), it->second.ptr.use_count());
+		}
+
+		assets.erase(it);
+	}
+
+	// ELSE: Silently quit, no need to log if there is nothing to delete
+}
+
+void AssetManager::clear() {
+	if (assets.empty()) return;
+
+	TraceLog(LOG_INFO, "[Asset-Man]: Clearing %d assets", assets.size());
+
+	std::vector<std::string> idsToUnload;
+	for (const auto& it : assets) {
+		idsToUnload.push_back(it.first);
+	}
+
+	for (const auto& id : idsToUnload) {
+		unload(id);
+	}
+}
+
+/*
 std::unordered_map<std::string, AssetEntry> AssetManager::assets;
 
 AssetManager& AssetManager::get() {
@@ -119,3 +224,6 @@ void AssetManager::registerAssetImpl(Shader, const std::string& assetID, const s
 	// Create register:
 	assets.insert({ assetID, entry });
 }
+
+
+*/

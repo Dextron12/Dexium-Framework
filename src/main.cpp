@@ -11,15 +11,15 @@ float vertices[] = {
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
-"{\n"
+"void main(){\n"
 "	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+"}";
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main(){\n"
 "	FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
+"}";
 
 #include <glad/glad.h>
 
@@ -28,12 +28,11 @@ int main(int argc, char* argv[]) {
 
 	WindowContext win("Dexium Tests", 1280, 720);
 
-	AssetManager& assets = AssetManager::get();
+	AssetManager& assets = AssetManager::getInstance();
 
-	assets.registerAsset<Texture2D>("pig", "Tests/Assets/Animals/Pig/Pig_01.png", false);
-
-	assets.registerAsset<Shader>("shader", vertexShaderSource, fragmentShaderSource, false);
-	const auto& shader = assets.use<Shader>("shader");
+	//assets.registerAsset("basicShader", AssetType::Shader_Type, { vertexShaderSource, fragmentShaderSource }, false);
+	const auto& shader = assets.use<Shader>("basicShader");
+	//shader->compile();
 
 	// Generates unique VBO
 	unsigned int VBO, VAO; // VAO --> "Vertex Attribute State Tracker", a lite-weight data structure that "remember"s the VBO layout. Can swab between VAO binds to render different states.
@@ -57,7 +56,7 @@ int main(int argc, char* argv[]) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//std::printf("deltaTime: %f,  FPS: %d\n", win.deltaTime, win.FPS);
+		shader->use();
 
 		glBindVertexArray(VAO); // Binds the VBO state configuration
 		glDrawArrays(GL_TRIANGLES, 0, 3);

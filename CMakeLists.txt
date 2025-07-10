@@ -4,15 +4,15 @@ project(Dexium
     LANGUAGES CXX
 )
 
-# Enable folders in IDEs like Visual Studio
+# Enable folders in IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# C++ Standard
+# C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Use vcpkg toolchain if present
+# vcpkg toolchain support
 if(DEFINED ENV{VCPKG_ROOT})
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         CACHE STRING "Vcpkg toolchain file")
@@ -25,31 +25,33 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 endif()
 
-# Collect files (flat structure)
+# Gather files
 file(GLOB DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 
-# Define library
-add_library(Dexium STATIC
-    ${DEXIUM_SRC}
-    ${DEXIUM_HEADERS}
-)
+# Ensure at least one main.cpp exists
+if(NOT DEXIUM_SRC)
+    message(FATAL_ERROR "No source files found in src/*.cpp — nothing to build.")
+endif()
 
-# Include path
-target_include_directories(Dexium PUBLIC include)
+# Build as executable (for now)
+add_executable(DexiumTest ${DEXIUM_SRC} ${DEXIUM_HEADERS})
 
-# Dependencies from vcpkg
+# Include headers
+target_include_directories(DexiumTest PUBLIC include)
+
+# Link deps from vcpkg
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-target_link_libraries(Dexium
+target_link_libraries(DexiumTest
     PRIVATE glfw
-    PRIVATE glad
-    PRIVATE glm
+    PRIVATE glad::glad
+    PRIVATE glm::glm
 )
 
-# Visual Studio filters
+# Filters in Visual Studio
 source_group("Source Files" FILES ${DEXIUM_SRC})
 source_group("Header Files" FILES ${DEXIUM_HEADERS})
 

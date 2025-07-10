@@ -4,14 +4,6 @@
 Shader::Shader(const std::string& vertex, const std::string& fragment, bool areFiles) {
 	usingFiles = areFiles;
 
-	if (usingFiles) {
-		vertexPath = vertex;
-		fragmentPath = fragment;
-	}
-	else {
-		vertexCode = vertex; fragmentCode = fragment;
-	}
-
 	if (!usingFiles) {
 		vertexCode = vertex; fragmentCode = fragment;
 	}
@@ -48,6 +40,8 @@ Shader::Shader(const std::string& vertex, const std::string& fragment, bool areF
 
 void Shader::compile(){
 
+	std::printf("[Shader]: Compiling Shader Program\n");
+
 	const char* vShaderCode = vertexCode.c_str();
 	const char* fShaderCode = fragmentCode.c_str();
 
@@ -69,6 +63,7 @@ void Shader::compile(){
 	// Fragment Shader
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
+	glCompileShader(fragment);
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
@@ -92,6 +87,10 @@ void Shader::compile(){
 }
 
 void Shader::use() {
+	if (this == nullptr) {
+		std::printf("[Error] [Shader Program]: No GL ID registered!\n");
+	}
+	std::printf("Using shader program: %d\n", ID);
 	glUseProgram(ID);
 }
 
