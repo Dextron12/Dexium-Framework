@@ -23,8 +23,8 @@ namespace  {
 
 
 			// Shader Loader:
-			mgr.registerLoader<Shader>(AssetType::Shader_Type, [](const AssetEntry& entry) -> std::shared_ptr<Shader> {
-				if (entry.type != AssetType::Shader_Type) {
+			mgr.registerLoader<Shader>(AssetType::Shader, [](const AssetEntry& entry) -> std::shared_ptr<Shader> {
+				if (entry.type != AssetType::Shader) {
 					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Shader");
 					return nullptr;
 				}
@@ -69,6 +69,36 @@ void AssetManager::registerAsset(const std::string& id, AssetType type, const st
 	entry.type = type;
 	entry.registryPaths = paths;
 	entry.ptr = nullptr;
+
+	assets.insert_or_assign(id, entry);
+}
+
+void AssetManager::registerAsset(const std::string& id, MeshType type, std::shared_ptr<Mesh> meshData) {
+	AssetEntry entry;
+	entry.fromFiles = false;
+
+	if (meshData != nullptr) {
+		// Create a new register:
+		entry.ptr = meshData;
+	}
+	else {
+		switch (type) {
+		case MeshType::TRIANGLE:
+			// uSE THE fACTORY TO GENERATE A MESH
+			entry.ptr = std::make_shared<Mesh>(MeshFactory::Triangle());
+			break;
+		case MeshType::RECTANGLE:
+			entry.ptr = std::make_shared<Mesh>(MeshFactory::Rectangle());
+			break;
+		default: break;
+		}
+
+		if (type == MeshType::USER_DEFINED) {
+			TraceLog(LOG_ERROR, "[Asset-Man]: Cannot register a user-defined Mesh without the Mesh data");
+			return;
+		}
+
+	}
 
 	assets.insert_or_assign(id, entry);
 }

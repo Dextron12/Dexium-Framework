@@ -31,24 +31,25 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	
 	TraceLog(LOG_INFO, "Uploading mesh data to GPU");
 
-	// Upload data to GPU
-	glGenBuffers(1, &VBO);
-
 	// Bind VAO:
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	//Check if an EBO is needed
-	if (indexData && indexSize) {
-		glGenBuffers(1, &EBO);
-	}
-
 	// Upload vertex data (VBO)
+	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Binds it
 	glBufferData(GL_ARRAY_BUFFER, vertexSize, vertexData, usageHint);
 
+
+	//Check if an EBO is needed
+	if (indexData && indexSize) {
+		glGenBuffers(1, &EBO);
+		TraceLog(LOG_INFO, "Generated EBO for Mesh");
+	}
+
 	// Upload element buffer (EBO) (if it exists) NOTE: VBO & VAO in-function, EBO is generated per Meshfactory output
 	if (usingEBO()) {
+		TraceLog(LOG_INFO, "Binding EBO for Mesh");
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // Binds EBO
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize, indexData, usageHint);
 	}

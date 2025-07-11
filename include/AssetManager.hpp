@@ -8,11 +8,14 @@
 #include <functional>
 #include <string>
 
-enum AssetType {
+#include <Mesh.hpp>
+
+enum class AssetType {
 	Texture,
 	Spritesheet,
 	Anim_Sprite,
-	Shader_Type,
+	Shader,
+	Mesh,
 	Unkown_Asset
 };
 
@@ -37,6 +40,7 @@ public:
 	AssetManager& operator=(const AssetManager&) = delete;
 
 	void registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile = true, bool validate = true);
+	void registerAsset(const std::string& id, MeshType meshType, std::shared_ptr<Mesh> meshData = nullptr);
 
 	template<typename T>
 	std::shared_ptr<T> use(const std::string& id);

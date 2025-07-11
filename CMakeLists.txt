@@ -29,6 +29,9 @@ endif()
 file(GLOB DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 
+# STB_Image
+file(GLOB DEXIUM_EXT CONFIGURE_DEPENDS external/STB/*.hpp)
+
 # Ensure at least one main.cpp exists
 if(NOT DEXIUM_SRC)
     message(FATAL_ERROR "No source files found in src/*.cpp — nothing to build.")
@@ -54,4 +57,5 @@ target_link_libraries(DexiumTest
 # Filters in Visual Studio
 source_group("Source Files" FILES ${DEXIUM_SRC})
 source_group("Header Files" FILES ${DEXIUM_HEADERS})
+source_group("External Files", FILES ${DEXIUM_EXT})
 
