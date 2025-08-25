@@ -7,8 +7,12 @@
 
 void Mesh::destroy() {
 	if (VBO) glDeleteBuffers(1, &VBO);
-	if (VAO) glDeleteVertexArrays(1, &VAO);
 	if (EBO) glDeleteBuffers(1, &EBO);
+	if (VAO) glDeleteVertexArrays(1, &VAO);
+
+	VBO = 0;
+	VAO = 0;
+	EBO = 0;
 
 	// Prevents memory leaks on gl objects. They dont really need ot be incased in an if statement
 	// as GL checks their state regardless if 0 or laoded.
@@ -28,8 +32,6 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	}
 
 	destroy(); // Clean up any old buffer memory from OpenGL (to rpevent a memory leak!)
-	
-	TraceLog(LOG_INFO, "Uploading mesh data to GPU");
 
 	// Bind VAO:
 	glGenVertexArrays(1, &VAO);
@@ -44,12 +46,13 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	//Check if an EBO is needed
 	if (indexData && indexSize) {
 		glGenBuffers(1, &EBO);
-		TraceLog(LOG_INFO, "Generated EBO for Mesh");
+	}
+	else if (EBO != 0) {
+		TraceLog(LOG_WARNING, "[Mesh Uploader]: No index data has been provided but a EBO is in use!");
 	}
 
 	// Upload element buffer (EBO) (if it exists) NOTE: VBO & VAO in-function, EBO is generated per Meshfactory output
 	if (usingEBO()) {
-		TraceLog(LOG_INFO, "Binding EBO for Mesh");
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // Binds EBO
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize, indexData, usageHint);
 	}
@@ -59,6 +62,7 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 		setupAttributes(); // User-defined attribute layout
 	}
 	else {
+		TraceLog(LOG_INFO, "Setting attrib pointer 0 to default");
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 	}

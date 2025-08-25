@@ -1,5 +1,6 @@
 
 #include <window.hpp>
+#include <AssetManager.hpp>
 
 std::filesystem::path VFS::execPath;
 

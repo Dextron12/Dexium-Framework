@@ -33,7 +33,7 @@ std::shared_ptr<T> AssetManager::use(const std::string& id) {
 		entry.ptr = loaderIt->second(entry);
 
 		if (!entry.ptr) {
-			TraceLog(LOG_ERROR, "[Asset-Man]: Failed ot laod asset: '%s'", id.c_str());
+			TraceLog(LOG_ERROR, "[Asset-Man]: Failed to load asset: '%s'", id.c_str());
 			return nullptr;
 		}
 	}

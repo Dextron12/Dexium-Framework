@@ -39,11 +39,15 @@ public:
 	AssetManager(const AssetManager&) = delete;
 	AssetManager& operator=(const AssetManager&) = delete;
 
+	void registerDefaultLoaders(); // Ensure this is eventually put into an engine init function
+
 	void registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile = true, bool validate = true);
 	void registerAsset(const std::string& id, MeshType meshType, std::shared_ptr<Mesh> meshData = nullptr);
 
+	bool queryAsset(const std::string& name);
+
 	template<typename T>
-	std::shared_ptr<T> use(const std::string& id);
+	std::shared_ptr<T> use(const std::string& assetID);
 
 	template <typename T>
 	void registerLoader(AssetType type, std::function<std::shared_ptr<T>(const AssetEntry&)> loader);

@@ -8,7 +8,7 @@ namespace  {
 			auto& mgr = AssetManager::getInstance();
 
 			// Texture2D Loader:
-			mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
+			/*mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
 				//Check type:
 				if (entry.type != AssetType::Texture) {
 					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Texture2D");
@@ -20,7 +20,20 @@ namespace  {
 				}
 				return std::make_shared<Texture2D>(entry.registryPaths[0]);
 			});
+			*/
 
+			// Texture2D Loader
+			mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
+				if (entry.type != AssetType::Texture) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Texture2D");
+					return nullptr;
+				}
+				if (entry.registryPaths.empty()) {
+					TraceLog(LOG_ERROR, "[Asset-Man]: Cannot create a Texture2D resource without a filePath");
+					return nullptr;
+				}
+				return std::make_shared<Texture2D>();
+				});
 
 			// Shader Loader:
 			mgr.registerLoader<Shader>(AssetType::Shader, [](const AssetEntry& entry) -> std::shared_ptr<Shader> {
@@ -42,7 +55,10 @@ namespace  {
 	};
 };
 
-static DefaultLoaderRegistrar __dexium_default_loaders;
+void AssetManager::registerDefaultLoaders() {
+	static DefaultLoaderRegistrar registrar;
+	(void)registrar;
+}
 
 void AssetManager::registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile, bool validate) {
 	
@@ -101,6 +117,16 @@ void AssetManager::registerAsset(const std::string& id, MeshType type, std::shar
 	}
 
 	assets.insert_or_assign(id, entry);
+}
+
+// Simply checks of the asset is registered. Note: This func makes noa ttempt at valdiating internal asset data!
+bool AssetManager::queryAsset(const std::string& assetID) {
+	if (assets.find(assetID) != assets.end()) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 void AssetManager::unload(const std::string& id) {

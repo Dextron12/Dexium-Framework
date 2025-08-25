@@ -2,6 +2,7 @@
 /build/
 /Tests/Assets/*
 /src/main.cpp
+Textures/*
 *.o
 *.obj
 *.so
