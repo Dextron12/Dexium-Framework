@@ -32,7 +32,9 @@ namespace  {
 					TraceLog(LOG_ERROR, "[Asset-Man]: Cannot create a Texture2D resource without a filePath");
 					return nullptr;
 				}
-				return std::make_shared<Texture2D>();
+				auto tex = std::make_shared<Texture2D>();
+				tex->load(entry.registryPaths[0]);
+				return tex;
 				});
 
 			// Shader Loader:

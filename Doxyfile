@@ -1,0 +1,104 @@
+#---------------------------------------------------------------------------
+# Project settings
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = 
+PROJECT_BRIEF          = 
+PROJECT_NUMBER         = "0.0.10"
+
+OUTPUT_DIRECTORY       = docs/build
+CREATE_SUBDIRS         = NO
+
+#---------------------------------------------------------------------------
+# Input settings
+#---------------------------------------------------------------------------
+
+INPUT                  = src include docs/src
+FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.md *.dox *.css
+RECURSIVE              = YES
+
+# Recognize Markdown
+MARKDOWN_SUPPORT       = YES
+EXTENSION_MAPPING      = md=markdown
+
+# Set index.MD to main page
+USE_MDFILE_AS_MAINPAGE = docs/src/index.md
+
+# Treat headers and inline files equally
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+
+#---------------------------------------------------------------------------
+# Build settings
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_XML           = YES
+
+# Nice themeing (works well with HTML)
+GENERATE_TREEVIEW      = YES
+FULL_PATH_NAMES        = NO
+
+#---------------------------------------------------------------------------
+# Documentation grouping
+#---------------------------------------------------------------------------
+
+# Allow @defgroup, @addtogroup, @ingroup, etc.
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+EXTRACT_PACKAGE        = YES
+EXTRACT_LOCAL_CLASSES  = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+#---------------------------------------------------------------------------
+# Warnings / diagnostics
+#---------------------------------------------------------------------------
+
+QUIET                  = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+
+#---------------------------------------------------------------------------
+# Dot / diagrams
+#---------------------------------------------------------------------------
+
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+CLASS_DIAGRAMS         = YES
+
+#---------------------------------------------------------------------------
+# Misc
+#---------------------------------------------------------------------------
+
+INLINE_SOURCES         = NO
+SOURCE_BROWSER         = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+
+# Don't include the actual code implementation in the docs
+SOURCE_BROWSER		= NO
+INLINE_SOURCES		= NO
+
+# Controls whether references are shown
+REFERENCES_RELATION = NO
+REFERENCES_BY_RELATION = NO
+
+
+#---------------------------------------------------------------------------
+# Custom CSS scripts
+#---------------------------------------------------------------------------
+
+HTML_EXTRA_STYLESHEET		= docs/src/index.css
+
+HTML_HEADER			= docs/src/custom_header.html

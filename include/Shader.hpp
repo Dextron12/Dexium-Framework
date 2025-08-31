@@ -9,6 +9,12 @@
 #include <fstream>
 #include <sstream>
 
+//std::string SHADER_2D_VERTEX;
+//std::string SHADER_2D_FRAGMENT;
+
+extern const std::string SHADER_2D_VERTEX;
+extern const std::string SHADER_2D_FRAGMENT;
+
 class Shader {
 public:
 	unsigned int ID;
@@ -37,5 +43,6 @@ private:
 	std::string vertexPath, fragmentPath;
 	bool usingFiles;
 };
+
 
 #endif

@@ -24,3 +24,6 @@ buildProj.bat
 
 #Screenshot files
 Snapshots/
+
+# Doxygen files
+docs/build/*

@@ -1,0 +1,52 @@
+<!-- Link your custom CSS -->
+<link rel="stylesheet" type="text/css" href="index.css">
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const links = document.querySelectorAll(".custom_treeview li a");
+        const currentPage = window.location.pathname.split("/").pop();
+
+        links.forEach(link => {
+            const hrefPage = link.getAttribute("href").split("/").pop();
+            if (hrefPage === currentPage) {
+                link.parentElement.classList.add("active");
+            }
+        });
+    });
+</script>
+
+<!-- Sidebar wrapper -->
+<div class="custom_sidebar">
+
+    <!-- Logo at the top of the sidebar -->
+    <div class="sidebar-logo">
+        <a href="index.html">
+            <img src="image/logo.png" alt="Dexium" />
+        </a>
+    </div>
+
+    <!-- Custom sidebar treeview -->
+    <div class="custom_treeview">
+        <details open>
+            <summary>Getting Started</summary>
+            <ul>
+                <li><a href="getting_started.html">Getting Started</a></li>
+                <li><a href="install.html">Installation</a></li>
+            </ul>
+        </details>
+        <details>
+            <summary>Tutorials</summary>
+            <ul>
+                <li><a href="tutorials/tut_1_hello_window.md">Hello Window!</a></li>
+                <li><a href="tutorials/tut_2_vfs.md">The Power of VFS</a></li>
+                <li><a href="tutorials/tut_3_assets.md">Asset Galore</a></li>
+            </ul>
+        </details>
+    </div>
+
+</div>
+
+<!-- Optional custom page header -->
+<div class="page-header">
+    <h1>Dexium</h1>
+</div>

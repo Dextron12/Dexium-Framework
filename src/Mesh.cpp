@@ -22,7 +22,7 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	
 	// Validate Vertex data:
 	if (!vertexData) {
-		TraceLog(LOG_ERROR, "[Mesh Uploader]: No Vertex data provided for Mesh: '%s'", name.c_str());
+		//TraceLog(LOG_ERROR, "[Mesh Uploader]: No Vertex data provided for Mesh: '%s'", name.c_str());
 		TraceLog(LOG_INFO, "[Mesh Uplaoder]: Ensure your Mesh factory Fucntion is working!");
 		return;
 	}
@@ -74,9 +74,14 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	glBindVertexArray(0);
 }
 
+void Mesh::upload(const std::vector<float>& vertices, std::function<void()> setupAttributes, const std::vector<unsigned int>& indices) {
+	upload(vertices.data(), vertices.size() * sizeof(float), setupAttributes, indices.data(), indices.size() * sizeof(unsigned int));
+}
+
 void Mesh::render() {
 	auto& assets =  AssetManager::getInstance();
 
+	/*
 	// Get shader info:
 	if (!shaderID.empty()) {
 		const auto& shader = assets.use<Shader>(shaderID);
@@ -86,7 +91,7 @@ void Mesh::render() {
 		else {
 			shader->use();
 		}
-	}
+	}*/
 
 	glBindVertexArray(VAO);
 	if (usingEBO()) {
@@ -100,6 +105,16 @@ void Mesh::render() {
 void MeshFactory::defaultLayout3f() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+}
+
+void MeshFactory::defaultTexture() {
+	//Pos
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// UVs
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 }
 
 
@@ -157,4 +172,63 @@ Mesh MeshFactory::Rectangle() {
 	indices, sizeof(indices));
 
 	return mesh;
+}
+
+std::shared_ptr<Mesh> MeshFactory::QuadWithUV(const std::vector<glm::vec2>* UVs) {
+	auto mesh = std::make_shared<Mesh>();
+	mesh->type = MeshType::RECTANGLE;
+
+	// Generate EBO
+	mesh->indexCount = 6;
+	mesh->vertexCount = 4;
+
+	std::vector<glm::vec3> positions = {
+		glm::vec3(0.5f, 0.5f, 0.0f),	// top right
+		glm::vec3(0.5f, -0.5f, 0.0f),	// bottom right
+		glm::vec3(- 0.5f, -0.5f, 0.0f),	// bottom left
+		glm::vec3(- 0.5f, 0.5f, 0.0f)	// top left
+	};
+
+	// Check for UV data, if not, generate it
+	std::vector<glm::vec2> uvData;
+	if (UVs) {
+		uvData = *UVs;
+	}
+	else {
+		// generate default:
+		uvData = {
+			glm::vec2(1.0f, 1.0f),		// top right
+			glm::vec2(1.0f, 0.0f),		// bottom right
+			glm::vec2(0.0f, 0.0f),		// bottom left
+			glm::vec2(0.0f, 1.0f)		// top left
+		};
+	}
+
+	// Indice data:
+	std::vector<unsigned int> indices = {
+		0, 1, 3,	// First triangle
+		1, 2, 3		// Second triangle
+	};
+
+	// Convert and join data
+	std::vector<float> m_vertices;
+	size_t vertexCount = positions.size();
+	m_vertices.clear();
+	m_vertices.reserve(vertexCount * 5); // 3 pos + 2 UV
+
+	for (size_t i = 0; i < vertexCount; ++i) {
+		// Position
+		m_vertices.push_back(positions[i].x);
+		m_vertices.push_back(positions[i].y);
+		m_vertices.push_back(positions[i].z);
+
+		// UV
+		m_vertices.push_back(uvData[i].x);
+		m_vertices.push_back(uvData[i].y);
+	}
+
+	mesh->upload(m_vertices, MeshFactory::defaultTexture, indices);
+
+	return mesh;
+
 }

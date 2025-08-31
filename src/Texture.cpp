@@ -26,7 +26,7 @@ const char* fragmentTextureShader = "#version 330 core\n"
 "}\0";
 
 
-Texture2D::Texture2D() : width(0), height(0), format(0), isLoaded(false) {
+Texture2D::Texture2D() : width(0), height(0), format(0) {
 
 	// Generate Mesh object;
 	mesh = std::make_unique<Mesh>();
@@ -36,6 +36,60 @@ Texture2D::Texture2D() : width(0), height(0), format(0), isLoaded(false) {
 	glGenTextures(1, &ID);
 }
 
+void Texture2D::load(const std::string& filePath, FilterMode mode) {
+
+	//Validate if file exists:
+	if (!VFS::exists(filePath)) {
+		TraceLog(LOG_ERROR, "[Texture]: Failed to load resource: '%s'", filePath.c_str());
+		return;
+	}
+
+	if (ID == 0) {
+		TraceLog(LOG_ERROR, "GL failed to generate a TextureID");
+		return;
+	}
+
+	// Bind texture object
+	glBindTexture(GL_TEXTURE_2D, ID);
+
+	// Texture filters:
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	if (mode == FilterMode::Linear) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+
+	// Load texture:
+	int nrChannels = 0;
+	unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
+	if (data) {
+		// Dtect format being used:
+		if (nrChannels == 1) format = GL_RED;
+		if (nrChannels == 2) format = GL_RG;
+		if (nrChannels == 3) format = GL_RGB;
+		if (nrChannels == 4) format = GL_RGBA;
+
+		// Upload and Generate Mipmap
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		TraceLog(LOG_ERROR, "[Textrue]: Failed to read texture: '%s'", filePath.c_str());
+		return;
+	}
+	stbi_image_free(data);
+
+	//Unbind TEXTURE_2D from the texture (Prevents crossing or overflow)
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
+/*
 // Assumes that the shader has already been bound by this point
 void Texture2D::load(std::string filePath, FilterMode mode) {
 	if (isLoaded) {
@@ -51,10 +105,6 @@ void Texture2D::load(std::string filePath, FilterMode mode) {
 	if (ID == 0) {
 		TraceLog(LOG_ERROR, "GL failed to generate a textureID");
 		return;
-	}
-
-	if (mesh->shaderID.empty()){
-		TraceLog(LOG_ERROR, "[Texture]: No shader program defined");
 	}
 
 	// Bind texture
@@ -118,6 +168,8 @@ void Texture2D::load(std::string filePath, FilterMode mode) {
 	mesh->vertexCount = 4;
 	mesh->indexCount = 6;
 
+	/*
+
 	// Sets the position attrib and uploads data. The UV's are uploaded seperatly so i can easily change this code later for sub-texturing
 	mesh->upload(vertexData, sizeof(vertexData), []() {
 		//Position atrib
@@ -130,25 +182,13 @@ void Texture2D::load(std::string filePath, FilterMode mode) {
 
 		}, indices, sizeof(indices));
 	//mesh->shaderID = "__TexShader";
+
+	
 }
+*/
 
-void Texture2D::setShader(const std::string& shaderID) {
-	const std::string& oldID = mesh->shaderID;
 
-	if (oldID == shaderID) {
-		TraceLog(LOG_INFO, "[Texture, Shader]: New shader matches old shaderID");
-		return;
-	}
-
-	//check if the new shader exists:
-	if (!AssetManager::getInstance().queryAsset(shaderID)) {
-		TraceLog(LOG_ERROR, "[Texture]: cannot assign shader '%s' to this texture. It does not exist", shaderID.c_str());
-		return;
-	}
-
-	mesh->shaderID = shaderID;
-}
-
+/*
 void Texture2D::render(glm::vec2 pos, int textureUnit) {
 	render(glm::vec4(pos.x, pos.y, 0.0f, 0.0f), textureUnit);
 }
@@ -188,3 +228,5 @@ void Texture2D::render(glm::vec4 pos, int textureUnit) {
 	// render the mesh, and pray the the GL gods that the VAO stored the texture data
 	mesh->render();
 }
+
+*/

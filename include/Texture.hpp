@@ -21,21 +21,21 @@ public:
 	int width, height;
 	int format;
 
-	unsigned int ID;
+	unsigned int ID; // The GL Texture ID
+	std::string samplerName; // THe GLSL sampler2D name.
+	unsigned int textureUnit = -1; // THe GLSL sampler 2D unit. If set to -1, the Material::render() will assign a textureUnit
 
 	Texture2D();
 
 	// Use FilterMode::Nearest for pixel art sprites, Linear for a blended natural look
-	void load(std::string filePath, FilterMode mode = FilterMode::Nearest);
+	void load(const std::string& filePath, FilterMode mode = FilterMode::Nearest);
 
-	void render(glm::vec4 pos, int textureUnit = 0);
-	void render(glm::vec2 pos, int textureUnit = 0);
 
-	void setShader(const std::string& shaderID);
+	//void render(glm::vec4 pos, int textureUnit = 0);
+	//void render(glm::vec2 pos, int textureUnit = 0);
+
 
 private:
-
-	bool isLoaded = false; // If true, Texture::Load() ahs been called
 
 	std::unique_ptr<Mesh> mesh;
 

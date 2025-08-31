@@ -99,6 +99,51 @@ void Shader::setFloat(const std::string& name, float value) const {
 	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
+void Shader::setVec2(const std::string& name, glm::vec2 value) const {
+	glUniform2f(glGetUniformLocation(ID, name.c_str()), value.x, value.y);
+}
+
+void Shader::setVec3(const std::string& name, glm::vec3 value) const {
+	glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
+}
+
+void Shader::setVec4(const std::string& name, glm::vec4 value) const {
+	glUniform4f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z, value.w);
+}
+
 void Shader::setMat4(const std::string& name, glm::mat4 mat) const {
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
+
+
+
+
+
+
+const std::string SHADER_2D_VERTEX = R"(#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aUV;
+
+out vec2 TexCoord;
+
+uniform mat4 model;
+uniform mat4 projection;
+
+void main() {
+	gl_Position = projection * model * vec4(aPos, 1.0);
+	TexCoord = aUV;
+}
+)";
+
+const std::string SHADER_2D_FRAGMENT = R"(#version 330 core
+
+in vec2 TexCoord;
+
+out vec4 FragColor;
+
+uniform sampler2D texture1;
+
+void main(){
+	FragColor = texture(texture1, TexCoord);
+}
+)";

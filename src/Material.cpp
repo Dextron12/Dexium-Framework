@@ -5,7 +5,7 @@ Material::Material(const std::string& shaderID) {
 	if (!AssetManager::getInstance().queryAsset(shaderID)) {
 		// Shader program does not exist!
 		TraceLog(LOG_ERROR, "[Material]: No Shader program: '%s' exists!\nMaterial will not render", shaderID.c_str());
-		m_shaderID.empty();
+		m_shaderID.clear();
 		return; // early return to prevent material initalisation.
 	}
 	else {
@@ -92,4 +92,39 @@ void Material::bind() const {
 	// Eventually a renderer will encapsulate the Texture@d, Shader & Mesh objects
 	// and all renderering will be handled by the renderer.
 
+	int textureUnit = 0;
+	for (auto& [name, tex] : m_textures) {
+		// First validate texture (An unlikely step,a s no invalid textures should exist)
+		if (!assets.queryAsset(tex)) {
+			TraceLog(LOG_ERROR, "Material configured with an invalid texture: '%s'", name.c_str());
+			return;
+		}
+		const std::shared_ptr<Texture2D>& texture = assets.use<Texture2D>(tex);
+		if (!texture) {
+			TraceLog(LOG_ERROR, "Material faield to fetch configured texture: '%s'", name.c_str());
+			return;
+		}
+
+		int unit;
+		if (texture->textureUnit >= 0) {
+			// TextureUnit explicitly assigned, respect it
+			unit = texture->textureUnit;
+		}
+		else {
+			// Auto-assign from the running counter
+			unit = textureUnit;
+			texture->textureUnit = unit; // Persit the assignment
+			textureUnit++;
+		}
+
+		// Reolve GLSL sampler name:
+		std::string glName = texture->samplerName.empty()
+			? "texture" + std::to_string(unit) : texture->samplerName;
+
+		//Bind & use texture
+		glActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_2D, texture->ID);
+
+		shader->setInt(glName, textureUnit);
+	}
 }
