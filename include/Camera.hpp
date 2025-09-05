@@ -16,6 +16,8 @@ public:
 	Camera(int screenWidth, int screenHeight, ProjectionType projType);
 
 	const glm::mat4& getProjection() const;
+	void setProjection(int screenWidth, int screenHeight, float zNear, float zFar);
+
 
 	ProjectionType type;
 

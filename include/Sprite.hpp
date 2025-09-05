@@ -25,9 +25,23 @@ protected:
 	virtual void update();
 
 private:
-	std::unique_ptr<Mesh> m_mesh; // Mesh is generated (unique to this texture)
 	std::shared_ptr<Camera> m_camera;
 	
 };
+
+
+/*
+class Spritesheet {
+public:
+	Spritesheet(const std::string& spritePath, std::shared_ptr<Camera> camera);
+	Spritesheet(const std::string& spritePath, const std::string& shaderID, std::shared_ptr<Camera> camera);
+
+private:
+	std::string m_shaderID;
+
+
+};
+
+*/
 
 #endif

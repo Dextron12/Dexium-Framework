@@ -87,6 +87,8 @@ void Texture2D::load(const std::string& filePath, FilterMode mode) {
 	//Unbind TEXTURE_2D from the texture (Prevents crossing or overflow)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	TraceLog(LOG_INFO, "[Texture]: Loaded texture: '%s'", std::filesystem::path(filePath).stem().string().c_str());
+
 }
 
 /*

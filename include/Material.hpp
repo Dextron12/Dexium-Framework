@@ -41,6 +41,9 @@ public:
 	// Apply material (and its properties) before drawing
 	void bind() const;
 
+	// Returns if a shader si attached or not.
+	bool hasShader();
+
 private:
 	std::string m_shaderID;
 

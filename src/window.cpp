@@ -100,7 +100,8 @@ void VFS::init() {
 #ifdef _WIN32
 	char buffer[MAX_PATH];
 	GetModuleFileNameA(NULL, buffer, MAX_PATH);
-	execPath = std::filesystem::path(buffer).parent_path();
+	execPath = std::filesystem::path(buffer).parent_path().parent_path();
+	//execPath = std::filesystem::path(buffer).parent_path();
 #endif
 
 #ifdef _DEBUG
@@ -113,7 +114,7 @@ void VFS::init() {
 bool WindowContext::toggleWireFrame() {
 	drawWireframe = !drawWireframe;
 	glPolygonMode(GL_FRONT_AND_BACK, drawWireframe ? GL_LINE : GL_FILL);
-	TraceLog(LOG_INFO, "[WindowContext] WireFrame mode: %s\n", (drawWireframe ? "enabled" : "disabled"));
+	TraceLog(LOG_INFO, "[WindowContext] WireFrame mode: %s", (drawWireframe ? "enabled" : "disabled"));
 	return drawWireframe;
 }
 
@@ -121,8 +122,21 @@ void WindowContext::onResize(int width, int height) {
 	glViewport(0, 0, width, height);
 	this->width = width; this->height = height;
 
+	// Call end-users custom resizeHook if one is provided
+	if (m_resizeCallbackScript) {
+		m_resizeCallbackScript();
+	}
+
 	TraceLog(LOG_INFO, "Window FrameBuffer has resized");
 }
+
+
+// Window lambda setters
+void WindowContext::setWindowResizeCallback(std::function<void()> callback) {
+	m_resizeCallbackScript = std::move(callback);
+}
+
+
 
 std::unique_ptr<std::string> VFS::resolve(const std::string& relativePath) {
 	//Check if VFS is intialized:

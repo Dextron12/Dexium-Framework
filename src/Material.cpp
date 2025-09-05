@@ -13,6 +13,10 @@ Material::Material(const std::string& shaderID) {
 	}
 }
 
+bool Material::hasShader() {
+	return AssetManager::getInstance().queryAsset(m_shaderID);
+}
+
 void Material::setUniform(const std::string& name, const UniformValue& value) {
 	m_uniforms[name] = value;
 }
@@ -125,6 +129,9 @@ void Material::bind() const {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture->ID);
 
-		shader->setInt(glName, textureUnit);
+		shader->setInt(glName, unit);
+
+		//TraceLog(LOG_INFO, "[%s] is using samplerID: %i", tex.c_str(), unit);
+
 	}
 }

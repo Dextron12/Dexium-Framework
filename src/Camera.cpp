@@ -20,6 +20,18 @@ Camera::Camera(int screenWidth, int screenHeight, ProjectionType projType) : win
 	// Eventually thjis should be configured so an end-user can easily set FOV, near and far planes
 }
 
+
+void Camera::setProjection(int screenWidth, int screenHeight, float zNear, float zFar) {
+	if (type ==		ORTHOGRAPHIC) {
+		projection = glm::ortho(0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f);
+	} else if (type == PERSPECTIVE) {
+		projection = glm::perspective(glm::radians(45.0f), (float)windowSize.x / (float)windowSize.y, zNear, zFar);
+	}
+
+	// Projection type locked ebcause that should be established on camera creation.
+}
+
+
 const glm::mat4& Camera::getProjection() const {
 	return projection;
 }
