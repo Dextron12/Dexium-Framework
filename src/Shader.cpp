@@ -116,6 +116,17 @@ void Shader::setMat4(const std::string& name, glm::mat4 mat) const {
 }
 
 
+void displayMat4(const glm::mat4& m) {
+	for (int row = 0; row < 4; ++row) {
+		std::cout << "| ";
+		for (int col = 0; col < 4; ++col) {
+			std::cout << m[col][row] << " ";
+		}
+		std::cout << " |\n";
+	}
+}
+
+
 
 
 
@@ -129,9 +140,20 @@ out vec2 TexCoord;
 uniform mat4 model;
 uniform mat4 projection;
 
+uniform vec4 uvRect; // x=left, y=top, z=right, w=bottom
+
 void main() {
 	gl_Position = projection * model * vec4(aPos, 1.0);
-	TexCoord = aUV;
+
+	// Check if uvRect is set to a valid range
+	if (uvRect.z > uvRect.x && uvRect.w > uvRect.y){
+		TexCoord = vec2(
+			uvRect.x + aUV.x * (uvRect.z - uvRect.x),
+			uvRect.y + aUV.y * (uvRect.w - uvRect.y)
+		);
+	} else {
+		TexCoord = aUV; // fallback to default UVs
+	}
 }
 )";
 
@@ -144,6 +166,8 @@ out vec4 FragColor;
 uniform sampler2D texture1;
 
 void main(){
-	FragColor = texture(texture1, TexCoord);
+	//FragColor = texture(texture1, TexCoord);
+	vec4 texColor = texture(texture1, TexCoord);
+	FragColor = mix(vec4(0.3, 0.6, 0.3, 1.0), texColor, texColor.a);
 }
 )";

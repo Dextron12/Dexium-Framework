@@ -93,6 +93,10 @@ void Mesh::render() {
 		}
 	}*/
 
+	if (VAO == 0 || EBO == 0) {
+		TraceLog(LOG_ERROR, "[Mesh]: Invalid buffers detected!\nVAO: %d, VBO: %d, EBO: %d", VAO, VBO, EBO);
+	}
+
 	glBindVertexArray(VAO);
 	if (usingEBO()) {
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
@@ -105,6 +109,9 @@ void Mesh::render() {
 void MeshFactory::defaultLayout3f() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// Unbind currently bound array (Prevents overlap, when building/editing multipe VBO's)
+	glBindVertexArray(0);
 }
 
 void MeshFactory::defaultTexture() {

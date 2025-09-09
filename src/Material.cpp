@@ -13,12 +13,18 @@ Material::Material(const std::string& shaderID) {
 	}
 }
 
+
+
 bool Material::hasShader() {
 	return AssetManager::getInstance().queryAsset(m_shaderID);
 }
 
 void Material::setUniform(const std::string& name, const UniformValue& value) {
 	m_uniforms[name] = value;
+}
+
+void Material::clearUniforms() {
+	m_uniforms.clear();
 }
 
 void Material::setTexture(const TextureType, const std::string& name, const std::string& textureID) {

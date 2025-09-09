@@ -33,7 +33,7 @@ namespace  {
 					return nullptr;
 				}
 				auto tex = std::make_shared<Texture2D>();
-				tex->load(entry.registryPaths[0]);
+				tex->load(entry.registryPaths[0], FilterMode::Linear);
 				return tex;
 				});
 

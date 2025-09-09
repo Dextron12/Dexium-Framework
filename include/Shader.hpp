@@ -15,6 +15,8 @@
 extern const std::string SHADER_2D_VERTEX;
 extern const std::string SHADER_2D_FRAGMENT;
 
+void displayMat4(const glm::mat4& m);
+
 class Shader {
 public:
 	unsigned int ID;

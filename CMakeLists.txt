@@ -26,7 +26,9 @@ if (NOT DEXIUM_SRC)
 endif()
 
 # Create executable
-add_executable(DexiumTest ${DEXIUM_SRC} ${DEXIUM_HEADERS})
+add_executable(DexiumTest ${DEXIUM_SRC} ${DEXIUM_HEADERS}
+        include/helpers.h
+        src/helpers.cpp)
 
 # Incldue directories
 target_include_directories(DexiumTest PUBLIC include)

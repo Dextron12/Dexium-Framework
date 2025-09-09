@@ -32,12 +32,14 @@ public:
 
 	Material(const std::string& shaderID);
 
+
 	// Sets a specified uniform for the configured shader
 	void setUniform(const std::string& name, const UniformValue& value);
+	void clearUniforms();
 
-	// Binds a texture to the material
+	// Binds a texture to the material (Uses pre-registered asset)
 	void setTexture(const TextureType type, const std::string& name, const std::string& textureID = "");
-
+	// Binds a texture to the material (
 	// Apply material (and its properties) before drawing
 	void bind() const;
 

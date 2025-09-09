@@ -29,6 +29,15 @@ struct Transform {
 
 	glm::mat4 toModelMatrix() const {
 		glm::mat4 model(1.0f);
+
+		// transform checks:
+		// refer to Bug: #04
+
+		if (scale.x <= 1 || scale.y <= 1) {
+			//TraceLog(LOG_WARNING, "The model scale is likely too small for anything to render! See Bug: #04!\nScale(%f, %f, %f)", scale.x, scale.y, scale.z);
+			std::printf("[WARNING]: The model scale is likely too small for anything to render! sEE bUG: #04\nScale(%f, %f, %f)\n", scale.x, scale.y, scale.z);
+		}
+
 		model = glm::translate(model, position);
 
 		// Apply rotations in ZYX order (common in graphics engines)
