@@ -181,6 +181,30 @@ Mesh MeshFactory::Rectangle() {
 	return mesh;
 }
 
+Mesh MeshFactory::unitRectangle() {
+	Mesh mesh;
+	mesh.type = MeshType::RECTANGLE;
+	mesh.indexCount = 6; // Generates EBO
+	mesh.vertexCount = 4;
+
+	std::vector<float> vertices = {
+		// Pos					// Uvs
+		0.0f, 0.0f, 0.0f,		0,0,	// Top left
+		1.0f, 0.0f, 0.0f,		1,0,	// Bottom left
+		1.0f, 1.0f, 0.0f,		1,1,	// Bottom right
+		0.0f, 1.0f, 0.0f,		0,1		// Top right
+	};
+
+	std::vector<unsigned int> indices = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	mesh.upload(vertices, MeshFactory::defaultTexture, indices);
+
+	return mesh;
+}
+
 std::shared_ptr<Mesh> MeshFactory::QuadWithUV(const std::vector<glm::vec2>* UVs) {
 	auto mesh = std::make_shared<Mesh>();
 	mesh->type = MeshType::RECTANGLE;

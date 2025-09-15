@@ -90,6 +90,10 @@ public:
 	static Mesh Triangle();
 	static Mesh Rectangle();
 	static std::shared_ptr<Mesh> QuadWithUV(const std::vector<glm::vec2>* UVs = nullptr);
+
+	// Unit Factory Functions (ranegs from [0,1] so its compatible for top-left(2D) projections
+	// All unit factory functions must provide both vertices & unit UVs
+	static Mesh unitRectangle();
 };
 
 #endif

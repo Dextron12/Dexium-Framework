@@ -127,10 +127,6 @@ void displayMat4(const glm::mat4& m) {
 }
 
 
-
-
-
-
 const std::string SHADER_2D_VERTEX = R"(#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
@@ -164,10 +160,10 @@ in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform sampler2D texture1;
+uniform vec4 uColor;
 
 void main(){
-	//FragColor = texture(texture1, TexCoord);
-	vec4 texColor = texture(texture1, TexCoord);
-	FragColor = mix(vec4(0.3, 0.6, 0.3, 1.0), texColor, texColor.a);
+	vec4 fragCol = texture(texture1, TexCoord);
+	FragColor = uColor;
 }
 )";

@@ -37,7 +37,7 @@ public:
 
 private:
 
-	std::unique_ptr<Mesh> mesh;
+	//std::unique_ptr<Mesh> mesh;
 
 };
 

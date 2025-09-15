@@ -49,6 +49,10 @@ public:
 	template<typename T>
 	std::shared_ptr<T> use(const std::string& assetID);
 
+	template<typename T>
+	// Use this registerAsset call if you registering a pre-defined asset
+	void registerAsset(const std::string& id, T&& asset, std::function<bool(const T&)> validator = nullptr);
+
 	template <typename T>
 	void registerLoader(AssetType type, std::function<std::shared_ptr<T>(const AssetEntry&)> loader);
 

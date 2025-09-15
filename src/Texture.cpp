@@ -29,8 +29,8 @@ const char* fragmentTextureShader = "#version 330 core\n"
 Texture2D::Texture2D() : width(0), height(0), format(0) {
 
 	// Generate Mesh object;
-	mesh = std::make_unique<Mesh>();
-	mesh->type = MeshType::USER_DEFINED;
+	//mesh = std::make_unique<Mesh>();
+	//mesh->type = MeshType::USER_DEFINED;
 
 	//Generate texture buffer, Mesh::uplaod generates VBO, VAO & EBO
 	glGenTextures(1, &ID);

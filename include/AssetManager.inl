@@ -1,6 +1,59 @@
 
 
+// Forward declarations for types
+class Texture2D;
+class Shader;
+class Mesh;
+class Sprite;
+class Spritesheet;
 
+template<typename T>
+struct AssetTraits;
+
+template <>
+struct AssetTraits<Texture2D> {
+	static constexpr AssetType type = AssetType::Texture;
+};
+
+template <>
+struct AssetTraits<Shader> {
+	static constexpr AssetType type = AssetType::Shader;
+};
+
+template <>
+struct AssetTraits<Mesh> {
+	static constexpr AssetType type = AssetType::Mesh;
+};
+
+/*
+template <>
+struct AssetTraits<Sprite> {
+	static constexpr AssetType type = AssetType::Sprite;
+};
+ --- NEEDS IMPLEMENTING ---
+ */
+
+template <typename T>
+void AssetManager::registerAsset(const std::string& id, T&& asset, std::function<bool(const T&)> validator) {
+	constexpr AssetType type = AssetTraits<T>::type;
+
+	if (validator && !validator(asset)) {
+		TraceLog(LOG_ERROR, "[Asset-Registrar]: Validation for '%s' failed. Check output logs", id.c_str());
+		return;
+	}
+
+	// Check for pre-exisiting registered asset
+	auto it = assets.find(id);
+	if (it != assets.end()) {
+		TraceLog(LOG_ERROR, "[Asset-Registrar]: Already registered '%s'", id.c_str());
+		return;
+	}
+
+	AssetEntry entry;
+	entry.type = type;
+	entry.ptr = std::make_shared<T>(std::move(asset));
+	assets[id] = entry; // Create new entry
+}
 
 template<typename T>
 void AssetManager::registerLoader(AssetType type, std::function<std::shared_ptr<T>(const AssetEntry&)> loader) {
