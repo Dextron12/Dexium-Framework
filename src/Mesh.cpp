@@ -79,19 +79,6 @@ void Mesh::upload(const std::vector<float>& vertices, std::function<void()> setu
 }
 
 void Mesh::render() {
-	auto& assets =  AssetManager::getInstance();
-
-	/*
-	// Get shader info:
-	if (!shaderID.empty()) {
-		const auto& shader = assets.use<Shader>(shaderID);
-		if (shader == nullptr) {
-			TraceLog(LOG_INFO, "[Mesh Renderer]: ShaderID: '%s', rendering default shader", shaderID.c_str());
-		}
-		else {
-			shader->use();
-		}
-	}*/
 
 	if (VAO == 0 || EBO == 0) {
 		TraceLog(LOG_ERROR, "[Mesh]: Invalid buffers detected!\nVAO: %d, VBO: %d, EBO: %d", VAO, VBO, EBO);
@@ -104,6 +91,9 @@ void Mesh::render() {
 	else {
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
+
+	//Unbind VAO (Prevents fun little bugs i spend days crying over!) -> Seriously do NOT touch!
+	glBindVertexArray(0);
 }
 
 void MeshFactory::defaultLayout3f() {

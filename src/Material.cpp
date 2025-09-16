@@ -6,7 +6,7 @@ Material::Material(const std::string& shaderID) {
 		// Shader program does not exist!
 		TraceLog(LOG_ERROR, "[Material]: No Shader program: '%s' exists!\nMaterial will not render", shaderID.c_str());
 		m_shaderID.clear();
-		return; // early return to prevent material initalisation.
+		return; // early return to prevent material initialisation.
 	}
 	else {
 		m_shaderID = shaderID;
@@ -27,7 +27,7 @@ void Material::clearUniforms() {
 	m_uniforms.clear();
 }
 
-void Material::setTexture(const TextureType, const std::string& name, const std::string& textureID) {
+void Material::setTexture(const TextureType type, const std::string& name, const std::string& textureID) {
 	std::string schName;
 	if (textureID == "" || textureID.size() == 0) {
 		schName = name;
@@ -35,10 +35,31 @@ void Material::setTexture(const TextureType, const std::string& name, const std:
 	else { schName = textureID; }
 
 	// Validate that a Texture asset exists:
-	if (!AssetManager::getInstance().queryAsset(schName)) {
+	auto tex = AssetManager::getInstance().use<Texture2D>(schName);
+	if (!tex) {
 		// No texture exists:
 		TraceLog(LOG_WARNING, "[Material]: No texture: '%s' could be found", schName);
 		return;
+	}
+
+
+	/*
+	 * --- DEXIUM TEXTURE UNITS ---
+	 * 1 - Albedo
+	 */
+
+	// CConfigure target texture unit
+	switch (type) {
+		case TextureType::Albedo:
+			tex->textureUnit = 1;
+			break;
+		case TextureType::Normal:
+			tex->textureUnit = 2;
+			break;
+		default:
+			TraceLog(LOG_WARNING, "[Material]: TextureType '%d' is not currently supported!", type);
+			break;
+
 	}
 
 	// Set the textureID
@@ -55,7 +76,7 @@ void Material::bind() const {
 		shader = assets.use<Shader>(m_shaderID);
 	}
 	else {
-		TraceLog(LOG_ERROR, "[Material]: Failed to retieve & bind shader program: '%s'", m_shaderID.c_str());
+		TraceLog(LOG_ERROR, "[Material]: Failed to retrieve & bind shader program: '%s'", m_shaderID.c_str());
 		return;
 	}
 
@@ -63,7 +84,7 @@ void Material::bind() const {
 
 	// Upload uniforms
 	for (const auto& [name, value] : m_uniforms) {
-		// Sometimes I do things thinking its smart, until its time to implement that... Which brings me to the below monstrosoty
+		// Sometimes I do things thinking it's smart, until it's time to implement that... Which brings me to the below monstrosity
 		std::visit([&](auto&& v) {
 			using T = std::decay_t<decltype(v)>;
 			if constexpr (std::is_same_v<T, int>) {
@@ -91,27 +112,27 @@ void Material::bind() const {
 				TraceLog(LOG_WARNING, "[Material]: The uniform: '%s' attempts to set an unsupported value!", name);
 			}
 			}, value);
-	}	// I must reiterate how cool lambda's are! Templates, not so much
+	}	// I must reiterate how cool lambdas are! Templates, not so much
 
-	// Bind Textures: Is left up tot he Texture function.
+	// Bind Textures: Is left up to the Texture function.
 	// However, how should we manage a material using multiple textures onto a 3D shape
 	// Or a textureAtlas onto a 3D shape like a cube?
 	
 
 	// Textures are handled in the Mesh::render function.
 	// Eventually a renderer will encapsulate the Texture@d, Shader & Mesh objects
-	// and all renderering will be handled by the renderer.
+	// and all rendering will be handled by the renderer.
 
 	int textureUnit = 0;
 	for (auto& [name, tex] : m_textures) {
-		// First validate texture (An unlikely step,a s no invalid textures should exist)
+		// First validate texture (An unlikely step,an s no invalid textures should exist)
 		if (!assets.queryAsset(tex)) {
 			TraceLog(LOG_ERROR, "Material configured with an invalid texture: '%s'", name.c_str());
 			return;
 		}
 		const std::shared_ptr<Texture2D>& texture = assets.use<Texture2D>(tex);
 		if (!texture) {
-			TraceLog(LOG_ERROR, "Material faield to fetch configured texture: '%s'", name.c_str());
+			TraceLog(LOG_ERROR, "Material field to fetch configured texture: '%s'", name.c_str());
 			return;
 		}
 
@@ -123,17 +144,19 @@ void Material::bind() const {
 		else {
 			// Auto-assign from the running counter
 			unit = textureUnit;
-			texture->textureUnit = unit; // Persit the assignment
+			texture->textureUnit = unit; // Persist the assignment
 			textureUnit++;
 		}
 
-		// Reolve GLSL sampler name:
+		// Resolve GLSL sampler name:
 		std::string glName = texture->samplerName.empty()
 			? "texture" + std::to_string(unit) : texture->samplerName;
 
 		//Bind & use texture
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture->ID);
+
+		//std::cout << "Texture Unit: " << glName << std::endl;
 
 		shader->setInt(glName, unit);
 

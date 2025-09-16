@@ -5,175 +5,91 @@
 
 #include <filesystem>
 
-Sprite::Sprite(const std::string& spritePath, std::shared_ptr<Camera> camera) {
-	m_camera = camera;
-
+Sprite::Sprite(const std::string& fileName) {
+	// Gte assets
 	auto& assets = AssetManager::getInstance();
 
+	// Renderable creation
+	m_sprite = std::make_unique<Renderable>();
 
-	// validate path/sprite
-	std::unique_ptr<std::string> path = VFS::resolve(spritePath);
-	std::string texName;
-	if (!path) {
-		// Check if its a registered asset:
-		if (!assets.queryAsset(spritePath)) {
-			TraceLog(LOG_ERROR, "[Sprite]: Texture '%s' couldn't be resolved as it's not registered or the path couldn't be resolved", spritePath.c_str());
+	// Dewfault 2D amterial
+	m_sprite->material = std::make_shared<Material>("__2D-Shader");
+
+	// Generate Quad Mesh (With UV data))
+	m_sprite->mesh = MeshFactory::QuadWithUV();
+
+	// Validate || Generate Texture2D (Assetmanager handles registration and loading)
+
+	const auto& l_name = VFS::resolve(fileName);
+	if (!l_name) {
+		// File does not exist. Check if its pre-registered:
+		if (assets.queryAsset(fileName)) {
+			m_spriteID = fileName;
+		} else {
+			// File does not exist and no pre-registered asset
+			TraceLog(LOG_WARNING, "[Sprite]: No texture named: '%s' could be located", fileName.c_str());
 			return;
 		}
-		else {
-			// Texture is registered, set its assetID
-			texName = spritePath;
-		}
-	}
-	else {
-		// Path has been resolved. Register texturre and name
-		std::filesystem::path m_path(*path.get());
-		// extract name
-		if (!m_path.has_stem()) {
-			TraceLog(LOG_ERROR, "[Sprite]: Failed to extract file name from the provided path: '%s'", path->c_str());
-			return;
-		}
-		texName = m_path.stem().string(); // Stem() gets the filename without the extension
-		
-		// Refer to Issue #03
-		assets.registerAsset(texName, AssetType::Texture, { *path.get()});
+	} else {
+		// Extract assetID from fileName
+		auto l_path = std::filesystem::path(*l_name.get()); // <-- RAW abs path
+		std::string name = l_path.filename().stem().string(); // Gets fileName without the extension
+		//Register new asset
+		assets.registerAsset(name, AssetType::Texture, {l_path.string()});
+		m_spriteID = name;
 	}
 
-	// Calling asset.use will internally load texture (refer to Issue: #02)
-	// Issue #02 expressly opened for this use-case
+	// COnfigure Material to use Texture
+	m_sprite->material->setTexture(Material::TextureType::Albedo, "albedo", m_spriteID);
 
-	// Asset Manager integration into subsystems ahs amde simple things hell. I hope the end-user appreciates the AssetManager
-
-	// Create Material & assign default Shader
-	switch (m_camera->type) {
-	case ORTHOGRAPHIC:
-		// Use default 2D shader
-		m_renderable.material = std::make_shared<Material>("__2D-Shader");
-		break;
-	case PERSPECTIVE:
-		// Use default 3D shader
-		//m_renderable.material = std::make_shared<Material>("__3D-Shader");
-		TraceLog(LOG_WARNING, "[Sprite]: Currently no 3D default shader is provided.\nProvide your own material with preconfigured 3D shader to sprite instead!");
-		break;
-	case UNDEFINED:
-		TraceLog(LOG_INFO, "[Sprite]: Camera does not specify a 2D/3D projection. No default shader can be generated for a user-defined camera\nPlease provide a preconfigured material(With a configured Shader) to Sprite instead");
-		break;
-	default:
-		TraceLog(LOG_WARNING, "[Sprite]: Could not generate a default material.\nPlease manually provide a preconfigured one");
-
-	}
-	// Set Mesh texture
-	m_renderable.material->setTexture(Material::TextureType::Albedo, texName);
-	// Configure Mesh for quad generation
-	m_renderable.mesh = MeshFactory::QuadWithUV();
-
-	// Configure Material to use loaded texture (Internally calls AssetManager::use() on the texture register)
-	if (m_renderable.material != nullptr) {
-		m_renderable.material->setTexture(Material::TextureType::Albedo, "albedo", texName);
-	}
-
-	// Configure model scale:
-	// Get texture data
-	const auto tex = assets.use<Texture2D>(texName);
-	m_renderable.transform->scale = glm::vec3(static_cast<float>(tex->width), static_cast<float>(tex->height), 0.0f);
+	// Clear uniforms to prevent weird bugs
+	m_sprite->material->clearUniforms();
 
 }
 
-Sprite::Sprite(std::shared_ptr<Material> material, const std::string& spritePath, std::shared_ptr<Camera> camera) {
-	// Set camera:
-	m_camera = camera;
+Sprite::~Sprite(){}
 
+void Sprite::setShader(const std::string& shaderID) {
+	if (AssetManager::getInstance().queryAsset(shaderID)) {
+		m_shaderID = shaderID;
+	} else {
+		TraceLog(LOG_WARNING, "[Spritesheet]: THe provided shader '%s' does not exist", shaderID.c_str());
+	}
+}
+
+void Sprite::drawSprite(const glm::vec3 pos, const glm::vec3 scale, const glm::vec3 rot) {
 	auto& assets = AssetManager::getInstance();
 
-	// validate path/sprite
-	std::unique_ptr<std::string> path = VFS::resolve(spritePath);
-	std::string texName;
-	if (!path) {
-		// Check if its a registered asset:
-		if (!assets.queryAsset(spritePath)) {
-			TraceLog(LOG_ERROR, "[Sprite]: Texture '%s' couldn't be resolved as it's not registered or the path couldn't be resolved", spritePath.c_str());
-			return;
-		}
-		else {
-			// Texture is registered, set its assetID
-			texName = spritePath;
-		}
-	}
-	else {
-		// Path has been resolved. Register texturre and name
-		std::filesystem::path m_path(*path.get());
-		// extract name
-		if (!m_path.has_stem()) {
-			TraceLog(LOG_ERROR, "[Sprite]: Failed to extract file name from the provided path: '%s'", path->c_str());
-			return;
-		}
-		texName = m_path.stem().string(); // Stem() gets the filename without the extension
-
-		// Refer to Issue #03
-		assets.registerAsset(texName, AssetType::Texture, { *path.get() });
-	}
-
-	// Calling asset.use will internally load texture (refer to Issue: #02)
-	// Issue #02 expressly opened for this use-case
-
-	// Asset Manager integration into subsystems ahs amde simple things hell. I hope the end-user appreciates the AssetManager
-
-	// Check if provided material has an attached shader
-	if (!material->hasShader()) {
-		TraceLog(LOG_ERROR, "[Sprite]: The provided material does not have a valid shader");
+	auto shader = assets.use<Shader>(m_shaderID);
+	if (!shader) {
+		TraceLog(LOG_ERROR, "[Sprite]: Failed to fetch shader program: '%s'", m_shaderID.c_str());
 		return;
 	}
-	else {
-		m_renderable.material = material;
+	shader->use(); // If same shader, GL ignores this state change
+
+	// Get Texture2D
+	const auto& l_texture = assets.use<Texture2D>(m_spriteID);
+	if (!l_texture) {
+		TraceLog(LOG_ERROR, "[Sprite]: Could not fetch Texture2D: '%s'.", m_spriteID.c_str());
+		return;
 	}
+	auto& l_transform = m_sprite->transform;
+	l_transform->position = pos;
+	l_transform->scale = glm::vec3(l_texture->width, l_texture->height, 1.0f);
+	l_transform->rotation = rot;
 
-	// Configure Mesh for quad generation
-	m_renderable.mesh = MeshFactory::QuadWithUV();
+	// Configure Shader
+	shader->setMat4("projection", camera->getProjection());
+	shader->setMat4("model", l_transform->toModelMatrix());
+	m_sprite->material->setUniform("uvRect", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+	m_sprite->material->setUniform("uColor", glm::vec4(255,255,255,255)/255.0f);
 
-	// Configure Material to use loaded texture (Internally calls AssetManager::use() on the texture register)
-	if (m_renderable.material != nullptr) {
-		m_renderable.material->setTexture(Material::TextureType::Albedo, "albedo", texName);
-	}
+	m_sprite->material->bind(); // Renderable::render also calls this function!
 
-	// Configure model scale:
-	// Get texture data
-	const auto tex = assets.use<Texture2D>(texName);
-	m_renderable.transform->scale = glm::vec3(static_cast<float>(tex->width), static_cast<float>(tex->height), 0.0f);
+	m_sprite->render(camera->getProjection());
 
-
-
-}
-
-const std::shared_ptr<Material>& Sprite::getMaterial() {
-	return m_renderable.material;
-}
-
-void Sprite::render(const Transform& transform){
-	m_renderable.transform = std::make_unique<Transform>(transform);
-
-	//Bind material (Should eventually be done in a renderer pipeline)
-	m_renderable.material->bind();
-	m_renderable.material->setUniform("model", m_renderable.transform->toModelMatrix());
-
-	// Rebind texture (per render, in case of using same material)
-	//m_renderable
-
-	//Render it
-	m_renderable.render(m_camera->getProjection());
-
-
-}
-
-void Sprite::render(const glm::vec4& pos) {
-	m_renderable.transform->position = glm::vec3(pos.x, pos.y, 0.0f);
-
-	m_renderable.transform->scale = glm::vec3(pos.z, pos.w, 0.0f);
-
-	render(*m_renderable.transform.get());
-}
-
-void Sprite::update() {
-
+	// Unbind Current texture from unit
+	glBindTexture(GL_TEXTURE_2D, 0); // Prevents further quircky bugs over the same texture unit!
 }
 
 
@@ -192,30 +108,23 @@ Spritesheet::Spritesheet(const std::string &fileName) {
 	// Create a default 2D Material
 	m_sprite->material = std::make_shared<Material>("__2D-Shader");
 
-	// Check if 'fileName' is a path or an asset
-	if (!VFS::exists(fileName)) {
+	const auto& l_name = VFS::resolve(fileName);
+	if (!l_name) {
+		// Check if provided name is a pre-registered asset
 		if (assets.queryAsset(fileName)) {
-			// filePath is a pre-registered asset. Assign it!
-			m_sprite->material->setTexture(Material::TextureType::Albedo, "albedo", fileName); // Stores the pre-registered asset for rendering on the Albedo surface
+			// Pre-registered asset of same name exists, use it
 			m_spriteID = fileName;
 		} else {
-			auto resFile = VFS::resolve(fileName);
-			if (!resFile) {
-				// No pre-registered asset or a existing path provided. Abort!
-				TraceLog(LOG_ERROR, "[Spritesheet]: Failed to resolve file name '%s'", fileName.c_str());
-				return;
-			}
-			// File path validated. Configure it for loading
-			const auto l_texturePath = std::filesystem::path(*resFile.get()).stem();
-			assets.registerAsset(l_texturePath.string(), AssetType::Texture, {l_texturePath.string()});
-			m_spriteID = l_texturePath.string();
+			// No existign asset or configured path defined. Cannot proceed!
+			TraceLog(LOG_ERROR, "[Spritesheet]: Failed to register texture: '%s'. It cannot be located", fileName.c_str());
+			return;
 		}
 	} else {
-		std::cerr << "Hello, World!" << std::endl;
-		// File exists, load it! (If a file was found, assume that a path was provided. Assetmanager doesnt usually store ID's as paths)
-		const auto l_texturePath = std::filesystem::path(fileName).filename();
-		assets.registerAsset(l_texturePath.stem().string(), AssetType::Texture, {l_texturePath.string()});
-		m_spriteID = l_texturePath.string();
+		const auto l_texturePath = std::filesystem::path(*l_name.get());
+		std::string assetName = l_texturePath.filename().stem().string();
+		// Register the new asset
+		assets.registerAsset(assetName, AssetType::Texture, {l_texturePath.string()});
+		m_spriteID = assetName;
 	}
 
 	// Generate Quad mesh
@@ -224,7 +133,7 @@ Spritesheet::Spritesheet(const std::string &fileName) {
 	// Configure the Material to use the texture2D
 	m_sprite->material->setTexture(Material::TextureType::Albedo, "albedo", m_spriteID);
 
-	m_sprite->material->clearUniforms();
+	m_sprite->material->clearUniforms(); // Uhmm, Does this clear uniforms or uniforms + textures?
 }
 
 Spritesheet::~Spritesheet() {
@@ -282,6 +191,7 @@ void Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, g
 	auto &assets = AssetManager::getInstance();
 
 	auto shader = assets.use<Shader>(m_shaderID);
+	shader->use(); // Shouldn't effect perf if its the same shader being used.
 
 	auto it = m_frames.find(spriteID);
 	if (it == m_frames.end()) {
@@ -312,15 +222,17 @@ void Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, g
 	l_transform->scale = glm::vec3(it->second.z, it->second.w, 1.0f); // Force px space coords for subTexture size
 	l_transform->rotation = rot;
 
-	//shader->setMat4("projection", camera->getProjection());
-	//shader->setMat4("model", transform.toModelMatrix());
+	shader->setMat4("projection", camera->getProjection());
+	shader->setMat4("model", l_transform->toModelMatrix());
 	m_sprite->material->setUniform("uvRect", uv);
+	m_sprite->material->setUniform("uColor", glm::vec4(255,255,255,255) / 255.0f);
 
+	m_sprite->material->bind();
 	//m_mesh->render();
 	m_sprite->render(camera->getProjection());
 
-
-
+	// Unbind Texture
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 

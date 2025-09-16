@@ -88,6 +88,8 @@ struct Renderable {
 		material->setUniform("projection", projection);
 		material->setUniform("model", transform->toModelMatrix());
 		mesh->render();
+
+
 	}
 
 };

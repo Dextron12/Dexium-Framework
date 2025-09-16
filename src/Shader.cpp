@@ -127,7 +127,8 @@ void displayMat4(const glm::mat4& m) {
 }
 
 
-const std::string SHADER_2D_VERTEX = R"(#version 330 core
+const std::string SHADER_2D_VERTEX = R"(
+#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
 
@@ -139,18 +140,21 @@ uniform mat4 projection;
 uniform vec4 uvRect; // x=left, y=top, z=right, w=bottom
 
 void main() {
-	gl_Position = projection * model * vec4(aPos, 1.0);
+    gl_Position = projection * model * vec4(aPos, 1.0);
 
-	// Check if uvRect is set to a valid range
-	if (uvRect.z > uvRect.x && uvRect.w > uvRect.y){
-		TexCoord = vec2(
-			uvRect.x + aUV.x * (uvRect.z - uvRect.x),
-			uvRect.y + aUV.y * (uvRect.w - uvRect.y)
-		);
-	} else {
-		TexCoord = aUV; // fallback to default UVs
-	}
+    // Check if uvRect is set to a valid range
+    if (uvRect.z > uvRect.x && uvRect.w > uvRect.y){
+        // UV slice defined
+        TexCoord = vec2(
+            uvRect.x + aUV.x * (uvRect.z - uvRect.x),
+            uvRect.y + aUV.y * (uvRect.w - uvRect.y)
+        );
+    } else {
+        // Fallback: normalize aUV from [-0.5,0.5] -> [0,1]
+        TexCoord = aUV + vec2(0.5);
+    }
 }
+
 )";
 
 const std::string SHADER_2D_FRAGMENT = R"(#version 330 core
@@ -164,6 +168,6 @@ uniform vec4 uColor;
 
 void main(){
 	vec4 fragCol = texture(texture1, TexCoord);
-	FragColor = uColor;
+	FragColor = fragCol * uColor;
 }
 )";

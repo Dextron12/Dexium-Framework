@@ -67,7 +67,6 @@ template<typename T>
 std::shared_ptr<T> AssetManager::use(const std::string& id) {
 	auto it = assets.find(id);
 	if (it == assets.end()) {
-		
 		TraceLog(LOG_ERROR, "[Asset-Man]: Asset not found: '%s'", id.c_str());
 		return nullptr;
 	}
@@ -82,7 +81,6 @@ std::shared_ptr<T> AssetManager::use(const std::string& id) {
 			return nullptr;
 		}
 
-		// Calls a type-erased laoder lambda
 		entry.ptr = loaderIt->second(entry);
 
 		if (!entry.ptr) {
@@ -91,6 +89,12 @@ std::shared_ptr<T> AssetManager::use(const std::string& id) {
 		}
 	}
 
-	// Downcast to the correct type
+	if (entry.type != AssetTraits<T>::type) {
+		TraceLog(LOG_ERROR, "[Asset-Man]: Type mismatch for asset '%s'. Requested type %d, actual type %d",
+				 id.c_str(), static_cast<int>(AssetTraits<T>::type), static_cast<int>(entry.type));
+		return nullptr;
+	}
+
+	// Safe cast
 	return std::static_pointer_cast<T>(entry.ptr);
 }

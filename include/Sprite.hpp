@@ -20,27 +20,23 @@ struct SubTexture {
 
 class Sprite {
 public:
-	Sprite(const std::string& spritePath, std::shared_ptr<Camera> camera);
-	Sprite(std::shared_ptr<Material> material, const std::string& spritePath, std::shared_ptr<Camera> camera);
+	Sprite(const std::string& fileName);
+	~Sprite();
 
-	 const std::shared_ptr<Material>& getMaterial();
+	// Performs validation checks against AssetManager(The holy monolith of this project)
+	void setShader(const std::string& shaderID);
 
-	 /* Because of some frustrations - it's important to note that Material is bound once every render() call*/
-	 void render(const Transform& transform);
+	void drawSprite(const glm::vec3 pos, const glm::vec3 scale = glm::vec3(1.0f), const glm::vec3 rot = glm::vec3(0.0f));
 
-	 // Scale Sprite by w & h offset (x, y, w, h)
-	 void render(const glm::vec4& pos);
-
-protected:
-	Transform model; // The pos, scale and rot of sprite. DO NOT manually set scale, instead use setSize(). En
-
-	Renderable m_renderable;
-
-	virtual void update();
+	std::shared_ptr<Camera> camera;
 
 private:
-	std::shared_ptr<Camera> m_camera;
-	
+	std::unique_ptr<Renderable> m_sprite; // The renderable context
+	std::string m_spriteID; // The internal AssetManager ID for the Texture2D
+
+	std::string m_shaderID;
+
+
 };
 
 

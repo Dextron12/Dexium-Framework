@@ -26,8 +26,7 @@ void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) 
     // Configure shader params:
     shader.setMat4("model", model.toModelMatrix());
     shader.setVec4("uColor", colour.normalized());
-    auto col = colour.normalized();
-    //std::cout << col.r << ", " << col.g << ", " << col.b << ", " << col.a << std::endl;
+
 
     // Configure default white texture for usage
     auto& assets = AssetManager::getInstance();
@@ -36,7 +35,7 @@ void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) 
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex->ID);
-    shader.setInt("texture1", tex->ID);
+    shader.setInt("texture1", 0);
 
     getUnitRect()->render();
 
