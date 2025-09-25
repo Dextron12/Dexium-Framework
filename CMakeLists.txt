@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
+
+# Add other optional 3rd party libs here
+option(DEXIUM_HAS_JSON "Build with nlohmann/json" ON)
+
 project(Dexium VERSION 0.0.11 LANGUAGES CXX)
 
 # Enable folders in DIEs
@@ -33,6 +37,23 @@ add_executable(DexiumTest ${DEXIUM_SRC} ${DEXIUM_HEADERS}
 # Incldue directories
 target_include_directories(DexiumTest PUBLIC include)
 target_include_directories(DexiumTest PUBLIC ${CMAKE_SOURCE_DIR}/external/STB)
+
+#Optional 3rd party libs
+if (DEXIUM_USE_JSON)
+    #First try find system instaleld nlohmann/json
+    find_package(nlohmann_json CONFIG REQUIRED)
+
+    if (nlohmann_json_FOUND)
+        message(STATUS "Using system-installed nlohmann_json")
+        target_link_libraries(Dexium PRIVATE nlohmann_json::nlohmann_json)
+    else()
+        message(STATUS "System nlohmann_json not found, using vendored copy")
+        add_subdirectory(third_party/nlohmann_json)
+        target_link_libraries(Dexium PRIVATE nlohmann_json)
+    endif ()
+
+    target_compile_definitions(Dexium PRIVATE DEXIUM_HAS_JSON)
+endif ()
 
 # Find packages via VCPKG
 find_package(glfw3 CONFIG REQUIRED)
