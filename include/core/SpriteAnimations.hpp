@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-#include <Sprite.hpp>
+#include <core/Sprite.hpp>
 
 // Only used for sequence creation. internal Spritesheet obj holds UV data
 struct newSeqFrame {

@@ -2,13 +2,13 @@
 // Created by Dextron12 on 14/09/2025.
 //
 
-#include "Primitives.hpp"
+#include "core/Primitives.hpp"
 
 #include <glm/vec4.hpp>
 
-#include "Colour.hpp"
-#include "Shader.hpp"
-#include "AssetManager.hpp"
+#include "core/Colour.hpp"
+#include "core/Shader.hpp"
+#include "core/AssetManager.hpp"
 
 void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) {
 

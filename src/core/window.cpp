@@ -1,6 +1,6 @@
 
-#include <window.hpp>
-#include <AssetManager.hpp>
+#include <core/window.hpp>
+#include <core/AssetManager.hpp>
 
 std::filesystem::path VFS::execPath;
 

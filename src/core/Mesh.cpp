@@ -1,9 +1,9 @@
 
-#include "window.hpp" // For TraceLog()
-#include "Shader.hpp" // For Shader;
-#include "AssetManager.hpp" // For AssetManager;
+#include "core/window.hpp" // For TraceLog()
+#include "core/Shader.hpp" // For Shader;
+#include "core/AssetManager.hpp" // For AssetManager;
 
-#include <Mesh.hpp>
+#include <core/Mesh.hpp>
 
 void Mesh::destroy() {
 	if (VBO) glDeleteBuffers(1, &VBO);

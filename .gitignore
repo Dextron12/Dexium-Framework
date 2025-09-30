@@ -1,5 +1,6 @@
 # Build Files
 /build/
+/build-rel/
 /Tests/*
 /Tests/Assets/*
 /src/main.cpp

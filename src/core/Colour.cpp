@@ -2,7 +2,7 @@
 // Created by Dextron12 on 14/09/2025.
 //
 
-#include "Colour.hpp"
+#include "core/Colour.hpp"
 
 Colour::Colour(const float& r, const float& g, const float& b, const float& a) {
     colour = glm::vec4(r, g, b, a);

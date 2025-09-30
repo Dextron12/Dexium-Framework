@@ -1,5 +1,5 @@
 
-#include "Material.hpp"
+#include "core/Material.hpp"
 
 Material::Material(const std::string& shaderID) {
 	if (!AssetManager::getInstance().queryAsset(shaderID)) {

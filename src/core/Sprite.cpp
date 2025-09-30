@@ -1,7 +1,7 @@
 
-#include "Sprite.hpp"
-#include "Texture.hpp"
-#include "AssetManager.hpp"
+#include <core/Sprite.hpp>
+#include <core/Texture.hpp>
+#include <core/AssetManager.hpp>
 
 #include <filesystem>
 

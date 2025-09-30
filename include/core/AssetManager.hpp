@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 
-#include <Mesh.hpp>
+#include <core/Mesh.hpp>
 
 enum class AssetType {
 	Texture,
@@ -67,10 +67,10 @@ private:
 	std::unordered_map < AssetType, std::function<std::shared_ptr<void>(const AssetEntry&)>> loaders;
 };
 
-#include <Texture.hpp>
-#include <Shader.hpp>
+#include <core/Texture.hpp>
+#include <core/Shader.hpp>
 
-#include <AssetManager.inl>
+#include <core/AssetManager.inl>
 
 
 

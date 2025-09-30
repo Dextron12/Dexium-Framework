@@ -1,4 +1,4 @@
-#include "Camera.hpp"
+#include "core/Camera.hpp"
 
 
 Camera::Camera(int screenWidth, int screenHeight, ProjectionType projType) : windowSize(screenWidth, screenHeight), type(projType) {

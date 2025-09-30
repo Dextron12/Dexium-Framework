@@ -6,6 +6,7 @@
 #define DEXIUM_HELPERS_H
 #include <glad/glad.h>
 #include <glm/vec4.hpp>
+#include <string>
 
 // Provide RGBA coords from 0 -> 255 (Internally converts to [0,1] GL)
 void clearScreen(float r, float g, float b, float a, GLbitfield buffer_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

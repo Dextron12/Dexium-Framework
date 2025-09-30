@@ -29,6 +29,14 @@ endfunction()
 
 
 
+# Use vcpkg toolchain - Dont like it... suck it!
+if (DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file" FORCE)
+endif()
+
+
+
 # Add other optional 3rd party libs here
 option(DEXIUM_USE_JSON "Build with nlohmann/json" ON)
 
@@ -42,30 +50,22 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Use vcpkg toolchain - Dont like it... suck it!
-if (DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    CACHE STRING "Vcpkg toolchain file")
-endif()
-
 # Gather source/header files
 file(GLOB DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB DEXIUM_SRC_CORE CONFIGURE_DEPENDS src/core/*.cpp)
 file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
-file(GLOB DEXIUM_EXT CONFIGURE_DEPENDS external/STB/*.hpp)
+file(GLOB DEXIUM_EXT CONFIGURE_DEPENDS third_party/STB/*.hpp)
+
+add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_SRC_CORE} ${DEXIUM_HEADERS} ${DEXIUM_EXT})
 
 # Ensure at least one main.cpp exists
 if (NOT DEXIUM_SRC)
     message(FATAL_ERROR "No source files found in src/*.cpp - nothing to build")
 endif()
 
-# Create executable
-add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_HEADERS}
-        include/helpers.h
-        src/helpers.cpp)
-
 # Incldue directories
 target_include_directories(Dexium-Core PUBLIC include)
-target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/external/STB)
+target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/third_party/STB)
 
 #Optional 3rd party libs
 dexium_add_optional_library(

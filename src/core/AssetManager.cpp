@@ -1,5 +1,5 @@
 
-#include <AssetManager.hpp>
+#include <core/AssetManager.hpp>
 
 // Register Dexium default laoders on static init:
 namespace  {

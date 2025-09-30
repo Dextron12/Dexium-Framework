@@ -2,11 +2,11 @@
 // Created by Dextron12 on 22/09/2025.
 //
 
-#include "SpriteAnimations.hpp"
+#include <core/SpriteAnimations.hpp>
 
 #ifdef DEXIUM_HAS_NLOHMANN_JSON
 #include <nlohmann/json.hpp>
-#include <config.hpp> // Contains engine_core versioning & core configurations
+#include <core/config.hpp> // Contains engine_core versioning & core configurations
 #include <fstream> // For file writing
 
 #endif

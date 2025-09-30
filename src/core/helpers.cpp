@@ -2,6 +2,7 @@
 // Created by Dextron12 on 10/09/2025.
 //
 
+#include <core/helpers.h>
 
 #include <glad/glad.h>
 #include <glm/vec4.hpp>
@@ -24,7 +25,7 @@ void clearScreen(glm::vec4 colour, GLbitfield buffer_mask) {
     clearScreen(colour[0], colour[1], colour[2], colour[3], buffer_mask);
 }
 
-void checkGLErrors(const std::string& label = "") {
+void checkGLErrors(const std::string& label) {
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         std::cerr << "[OpenGL Error]";

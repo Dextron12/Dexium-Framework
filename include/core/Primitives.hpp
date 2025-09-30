@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "Colour.hpp"
-#include "Shader.hpp"
-#include "Mesh.hpp"
+#include <core/Colour.hpp>
+#include <core/Shader.hpp>
+#include <core/Mesh.hpp>
 
 class Primitives {
 public:

@@ -5,10 +5,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <Mesh.hpp>
+#include <core/Mesh.hpp>
 
-#include <window.hpp>
-#include <AssetManager.hpp>
+#include <core/window.hpp>
+#include <core/AssetManager.hpp>
 
 enum class FilterMode {
 	Nearest,

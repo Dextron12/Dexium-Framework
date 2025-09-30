@@ -1,5 +1,5 @@
 
-#include <Shader.hpp>
+#include <core/Shader.hpp>
 
 Shader::Shader(const std::string& vertex, const std::string& fragment, bool areFiles) {
 	usingFiles = areFiles;
