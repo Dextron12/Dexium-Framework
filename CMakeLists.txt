@@ -1,7 +1,36 @@
 cmake_minimum_required(VERSION 3.20)
 
+#Helper function for optional dependencies
+function(dexium_add_optional_library TARGET OPTION_NAME SYSTEM_NAME VENDOR_PATH INTERFACE_TARGET)
+    if (${OPTION_NAME})
+        # First try system package
+        find_package(${SYSTEM_NAME} CONFIG QUIET)
+
+        if (TARGET ${INTERFACE_TARGET})
+            message(STATUS "Using system-installed ${SYSTEM_NAME}")
+        else()
+            # Fall back to vendor copy relative to project root
+            set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/${VENDOR_PATH}")
+            if (EXISTS "${VENDOR_DIR}/CMakeLists.txt")
+                message(STATUS "System ${SYSTEM_NAME} not found, using vendored copy at ${VENDOR_DIR}")
+                add_subdirectory(${VENDOR_DIR})
+            else()
+                message(FATAL_ERROR "Optional library ${SYSTEM_NAME} not found (system or vendor). Looked in ${VENDOR_DIR}")
+            endif()
+        endif()
+
+        target_link_libraries(${TARGET} PRIVATE ${INTERFACE_TARGET})
+
+        string(TOUPPER "${SYSTEM_NAME}" SYS_UPPER)
+        string(REPLACE "-" "_" SYS_UPPER "${SYS_UPPER}")
+        target_compile_definitions(${TARGET} PRIVATE DEXIUM_HAS_${SYS_UPPER}=1)
+    endif()
+endfunction()
+
+
+
 # Add other optional 3rd party libs here
-option(DEXIUM_HAS_JSON "Build with nlohmann/json" ON)
+option(DEXIUM_USE_JSON "Build with nlohmann/json" ON)
 
 project(Dexium VERSION 0.0.11 LANGUAGES CXX)
 
@@ -30,30 +59,23 @@ if (NOT DEXIUM_SRC)
 endif()
 
 # Create executable
-add_executable(DexiumTest ${DEXIUM_SRC} ${DEXIUM_HEADERS}
+add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_HEADERS}
         include/helpers.h
         src/helpers.cpp)
 
 # Incldue directories
-target_include_directories(DexiumTest PUBLIC include)
-target_include_directories(DexiumTest PUBLIC ${CMAKE_SOURCE_DIR}/external/STB)
+target_include_directories(Dexium-Core PUBLIC include)
+target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/external/STB)
 
 #Optional 3rd party libs
-if (DEXIUM_USE_JSON)
-    #First try find system instaleld nlohmann/json
-    find_package(nlohmann_json CONFIG REQUIRED)
+dexium_add_optional_library(
+        Dexium-Core
+        DEXIUM_USE_JSON
+        nlohmann_json
+        third_party/nlohmann_json
+        nlohmann_json::nlohmann_json
+)
 
-    if (nlohmann_json_FOUND)
-        message(STATUS "Using system-installed nlohmann_json")
-        target_link_libraries(Dexium PRIVATE nlohmann_json::nlohmann_json)
-    else()
-        message(STATUS "System nlohmann_json not found, using vendored copy")
-        add_subdirectory(third_party/nlohmann_json)
-        target_link_libraries(Dexium PRIVATE nlohmann_json)
-    endif ()
-
-    target_compile_definitions(Dexium PRIVATE DEXIUM_HAS_JSON)
-endif ()
 
 # Find packages via VCPKG
 find_package(glfw3 CONFIG REQUIRED)
@@ -61,7 +83,7 @@ find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 # Link libraries
-target_link_libraries(DexiumTest
+target_link_libraries(Dexium-Core
 PRIVATE glfw
 PRIVATE glad::glad
 PRIVATE glm::glm

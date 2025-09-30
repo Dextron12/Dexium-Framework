@@ -57,7 +57,7 @@ void Sprite::setShader(const std::string& shaderID) {
 	}
 }
 
-void Sprite::drawSprite(const glm::vec3 pos, const glm::vec3 scale, const glm::vec3 rot) {
+void Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
 	auto& assets = AssetManager::getInstance();
 
 	auto shader = assets.use<Shader>(m_shaderID);
@@ -74,17 +74,24 @@ void Sprite::drawSprite(const glm::vec3 pos, const glm::vec3 scale, const glm::v
 		return;
 	}
 	auto& l_transform = m_sprite->transform;
-	l_transform->position = pos;
-	l_transform->scale = glm::vec3(l_texture->width, l_texture->height, 1.0f);
+	l_transform->position = glm::vec3(pos.x, pos.y, 0.0f);
+	//l_transform->scale = glm::vec3(l_texture->width, l_texture->height, 1.0f);
 	l_transform->rotation = rot;
+	// Check if a custom scale has been set
+	if (pos.z != 0 && pos.w != 0) {
+		l_transform->scale = glm::vec3(pos.z, pos.w, 1.0f);
+	} else {
+		// Use the texture size as the render size
+		l_transform->scale = glm::vec3(l_texture->width, l_texture->height, 1.0f);
+	}
 
 	// Configure Shader
-	shader->setMat4("projection", camera->getProjection());
-	shader->setMat4("model", l_transform->toModelMatrix());
+	//shader->setMat4("projection", camera->getProjection());
+	//shader->setMat4("model", l_transform->toModelMatrix());
 	m_sprite->material->setUniform("uvRect", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 	m_sprite->material->setUniform("uColor", glm::vec4(255,255,255,255)/255.0f);
 
-	m_sprite->material->bind(); // Renderable::render also calls this function!
+	//m_sprite->material->bind(); // Renderable::render also calls this function!
 
 	m_sprite->render(camera->getProjection());
 
@@ -233,6 +240,10 @@ void Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, g
 
 	// Unbind Texture
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+const std::string& Spritesheet::getTextureID() {
+	return m_spriteID;
 }
 
 

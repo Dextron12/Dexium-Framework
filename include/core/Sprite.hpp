@@ -26,7 +26,8 @@ public:
 	// Performs validation checks against AssetManager(The holy monolith of this project)
 	void setShader(const std::string& shaderID);
 
-	void drawSprite(const glm::vec3 pos, const glm::vec3 scale = glm::vec3(1.0f), const glm::vec3 rot = glm::vec3(0.0f));
+	// Vec4(x,y, w,h) Leave w&h = 0 if you want to use defualt texture size
+	void drawSprite(const glm::vec4 pos, const glm::vec3 rot = glm::vec3(0.0f));
 
 	std::shared_ptr<Camera> camera;
 
@@ -55,6 +56,10 @@ public:
 	void load(const std::string& fileName = "");
 
 	void drawSprite(const std::string& spriteID, const glm::vec3 pos, glm::vec3 scale = glm::vec3(1.0), glm::vec3 rot = glm::vec3(0.0));
+
+	const std::unordered_map<std::string, glm::vec4>& getSpriteFrames() { return m_frames; }
+
+	const std::string& getTextureID();
 
 	std::shared_ptr<Camera> camera;
 private:
