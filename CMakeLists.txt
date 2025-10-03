@@ -56,6 +56,8 @@ file(GLOB DEXIUM_SRC_CORE CONFIGURE_DEPENDS src/core/*.cpp)
 file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 file(GLOB DEXIUM_EXT CONFIGURE_DEPENDS third_party/STB/*.hpp)
 
+file(GLOB_RECURSE CORE_ENGINE core/*.hpp core/*.cpp)
+
 add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_SRC_CORE} ${DEXIUM_HEADERS} ${DEXIUM_EXT})
 
 # Ensure at least one main.cpp exists
@@ -77,6 +79,7 @@ dexium_add_optional_library(
 )
 
 
+
 # Find packages via VCPKG
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -93,4 +96,5 @@ PRIVATE glm::glm
 source_group("Source Files" FILES ${DEXIUM_SRC})
 source_group("Header Files" FILES ${DEXIUM_HEADERS})
 source_group("External Files" Files ${DEXIUM_EXT})
+source_group("CORE_ENGINE" FILES ${CORE-ENGINE})
 
