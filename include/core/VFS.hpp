@@ -28,8 +28,8 @@ namespace Dexium {
 
         static std::unique_ptr<std::filesystem::path> resolve(const std::string& relPath);
 
-        static bool exits (const std::string& path);
-        static bool exits(const std::filesystem::path& path);
+        static bool exists (const std::string& path);
+        static bool exists(const std::filesystem::path& path);
 
         static std::filesystem::path getExecutablePath();
 

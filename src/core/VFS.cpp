@@ -47,11 +47,11 @@ std::unique_ptr<std::filesystem::path> Dexium::VFS::resolve(const std::string &r
     }
 }
 
-bool Dexium::VFS::exits(const std::filesystem::path &path) {
+bool Dexium::VFS::exists(const std::filesystem::path &path) {
     return std::filesystem::exists(path);
 }
 
-bool Dexium::VFS::exits(const std::string &path) {
+bool Dexium::VFS::exists(const std::string &path) {
     return std::filesystem::exists(path);
 }
 
