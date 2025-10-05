@@ -54,11 +54,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB DEXIUM_SRC_CORE CONFIGURE_DEPENDS src/core/*.cpp)
 file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
-file(GLOB DEXIUM_EXT CONFIGURE_DEPENDS third_party/STB/*.hpp)
+
+# Third Party OPTIONAL libs
+file(GLOB DEXIUM_EXT_STB CONFIGURE_DEPENDS third_party/STB/*.hpp)
+file(GLOB_RECURSE DEXIUM_EXT_FMT CONFIGURE_DEPENDS third_party/fmt/src/*)
 
 file(GLOB_RECURSE CORE_ENGINE core/*.hpp core/*.cpp)
 
-add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_SRC_CORE} ${DEXIUM_HEADERS} ${DEXIUM_EXT})
+add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_SRC_CORE} ${DEXIUM_HEADERS} ${DEXIUM_EXT_STB} ${DEXIUM_EXT_FMT})
 
 # Ensure at least one main.cpp exists
 if (NOT DEXIUM_SRC)
@@ -68,6 +71,8 @@ endif()
 # Incldue directories
 target_include_directories(Dexium-Core PUBLIC include)
 target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/third_party/STB)
+target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/third_party/fmt)
+
 
 #Optional 3rd party libs
 dexium_add_optional_library(
@@ -78,7 +83,8 @@ dexium_add_optional_library(
         nlohmann_json::nlohmann_json
 )
 
-
+#Add fmt subdirector
+add_subdirectory(third_party/fmt)
 
 # Find packages via VCPKG
 find_package(glfw3 CONFIG REQUIRED)
@@ -90,6 +96,7 @@ target_link_libraries(Dexium-Core
 PRIVATE glfw
 PRIVATE glad::glad
 PRIVATE glm::glm
+PRIVATE fmt::fmt
 )
 
 # Group files in an IDE CLion/Visual Studio
