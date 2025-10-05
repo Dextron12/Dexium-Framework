@@ -1,7 +1,13 @@
 
 #include <core/Shader.hpp>
+#include <core/Error.hpp>
 
-Shader::Shader(const std::string& vertex, const std::string& fragment, bool areFiles) {
+#include <glad/glad.h>
+
+#include <fstream>
+#include <sstream>
+
+Dexium::Shader::Shader(const std::string& vertex, const std::string& fragment, bool areFiles) {
 	usingFiles = areFiles;
 
 	if (!usingFiles) {
@@ -32,13 +38,13 @@ Shader::Shader(const std::string& vertex, const std::string& fragment, bool areF
 			fragmentCode = fShaderStream.str();
 		}
 		catch (std::ifstream::failure e) {
-			std::cout << "[Shader Compiler]: File not successfullly read" << std::endl;
+			TraceLog(LOG_WARNING,"[Shader Compiler]: The file {} was not successfully read", vertexCode, fragmentCode);
 		}
 	}
 
 }
 
-void Shader::compile(){
+void Dexium::Shader::compile(){
 	const char* vShaderCode = vertexCode.c_str();
 	const char* fShaderCode = fragmentCode.c_str();
 
@@ -54,7 +60,7 @@ void Shader::compile(){
 	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "[Shader Compiler: Vertex]: Failed to compile Vertex Shader\n" << infoLog << std::endl;
+		TraceLog(LOG_WARNING, "[Shader Compiler](Vertex): Failed to compile Vertex\nVERTEX ERROR: {}\n", infoLog);
 	}
 
 	// Fragment Shader
@@ -64,7 +70,7 @@ void Shader::compile(){
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "[Shader Compiler: Fragment]: Failed to compile Fragment shader\n" << infoLog << std::endl;
+		TraceLog(LOG_WARNING, "[Shader Compiler](Fragment): Failed to compile Fragment\nFRAGMENT ERROR: {}\n", infoLog);
 	}
 
 	// Create and Link program
@@ -75,7 +81,7 @@ void Shader::compile(){
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(ID, 512, NULL, infoLog);
-		std::cout << "[Shader Compiler: Program]: Failed to compile Shader Program\n" << infoLog << std::endl;
+		TraceLog(LOG_ERROR, "[Shader Compiler]: Failed to link Shader Program\nSHADER ERROR: {}\n", infoLog);
 	}
 
 	// Clean up
@@ -83,51 +89,40 @@ void Shader::compile(){
 	glDeleteShader(fragment);
 }
 
-void Shader::use() {
+void Dexium::Shader::use() {
 	glUseProgram(ID);
 }
 
-void Shader::setBool(const std::string& name, bool value) const {
+void Dexium::Shader::setBool(const std::string& name, bool value) const {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Shader::setInt(const std::string& name, int value) const {
+void Dexium::Shader::setInt(const std::string& name, int value) const {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string& name, float value) const {
+void Dexium::Shader::setFloat(const std::string& name, float value) const {
 	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setVec2(const std::string& name, glm::vec2 value) const {
+void Dexium::Shader::setVec2(const std::string& name, glm::vec2 value) const {
 	glUniform2f(glGetUniformLocation(ID, name.c_str()), value.x, value.y);
 }
 
-void Shader::setVec3(const std::string& name, glm::vec3 value) const {
+void Dexium::Shader::setVec3(const std::string& name, glm::vec3 value) const {
 	glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
 }
 
-void Shader::setVec4(const std::string& name, glm::vec4 value) const {
+void Dexium::Shader::setVec4(const std::string& name, glm::vec4 value) const {
 	glUniform4f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z, value.w);
 }
 
-void Shader::setMat4(const std::string& name, glm::mat4 mat) const {
+void Dexium::Shader::setMat4(const std::string& name, glm::mat4 mat) const {
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
 
-void displayMat4(const glm::mat4& m) {
-	for (int row = 0; row < 4; ++row) {
-		std::cout << "| ";
-		for (int col = 0; col < 4; ++col) {
-			std::cout << m[col][row] << " ";
-		}
-		std::cout << " |\n";
-	}
-}
-
-
-const std::string SHADER_2D_VERTEX = R"(
+const std::string Dexium::SHADER_2D_VERTEX = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
@@ -157,7 +152,7 @@ void main() {
 
 )";
 
-const std::string SHADER_2D_FRAGMENT = R"(#version 330 core
+const std::string Dexium::SHADER_2D_FRAGMENT = R"(#version 330 core
 
 in vec2 TexCoord;
 

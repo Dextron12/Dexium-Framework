@@ -1,11 +1,10 @@
 
-#include "core/window.hpp" // For TraceLog()
-#include "core/Shader.hpp" // For Shader;
 #include "core/AssetManager.hpp" // For AssetManager;
+#include "core/Error.hpp"		// For TraceLog;
 
 #include <core/Mesh.hpp>
 
-void Mesh::destroy() {
+void Dexium::Mesh::destroy() {
 	if (VBO) glDeleteBuffers(1, &VBO);
 	if (EBO) glDeleteBuffers(1, &EBO);
 	if (VAO) glDeleteVertexArrays(1, &VAO);
@@ -18,7 +17,7 @@ void Mesh::destroy() {
 	// as GL checks their state regardless if 0 or laoded.
 }
 
-void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<void()> setupAttributes, const void* indexData, GLsizeiptr indexSize) {
+void Dexium::Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<void()> setupAttributes, const void* indexData, GLsizeiptr indexSize) {
 	
 	// Validate Vertex data:
 	if (!vertexData) {
@@ -74,11 +73,11 @@ void Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::function<v
 	glBindVertexArray(0);
 }
 
-void Mesh::upload(const std::vector<float>& vertices, std::function<void()> setupAttributes, const std::vector<unsigned int>& indices) {
+void Dexium::Mesh::upload(const std::vector<float>& vertices, std::function<void()> setupAttributes, const std::vector<unsigned int>& indices) {
 	upload(vertices.data(), vertices.size() * sizeof(float), setupAttributes, indices.data(), indices.size() * sizeof(unsigned int));
 }
 
-void Mesh::render() {
+void Dexium::Mesh::render() {
 
 	if (VAO == 0 || EBO == 0) {
 		TraceLog(LOG_ERROR, "[Mesh]: Invalid buffers detected!\nVAO: %d, VBO: %d, EBO: %d", VAO, VBO, EBO);
@@ -96,7 +95,7 @@ void Mesh::render() {
 	glBindVertexArray(0);
 }
 
-void MeshFactory::defaultLayout3f() {
+void Dexium::MeshFactory::defaultLayout3f() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
@@ -104,7 +103,7 @@ void MeshFactory::defaultLayout3f() {
 	glBindVertexArray(0);
 }
 
-void MeshFactory::defaultTexture() {
+void Dexium::MeshFactory::defaultTexture() {
 	//Pos
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -117,7 +116,7 @@ void MeshFactory::defaultTexture() {
 
 // Mesh factory funcs:
 
-Mesh MeshFactory::Triangle() {
+Dexium::Mesh Dexium::MeshFactory::Triangle() {
 	Mesh mesh;
 
 	mesh.type = MeshType::TRIANGLE;
@@ -144,7 +143,7 @@ Mesh MeshFactory::Triangle() {
 	return mesh;
 }
 
-Mesh MeshFactory::Rectangle() {
+Dexium::Mesh Dexium::MeshFactory::Rectangle() {
 	Mesh mesh;
 
 	mesh.type = MeshType::RECTANGLE;
@@ -171,7 +170,7 @@ Mesh MeshFactory::Rectangle() {
 	return mesh;
 }
 
-Mesh MeshFactory::unitRectangle() {
+Dexium::Mesh Dexium::MeshFactory::unitRectangle() {
 	Mesh mesh;
 	mesh.type = MeshType::RECTANGLE;
 	mesh.indexCount = 6; // Generates EBO
@@ -195,7 +194,7 @@ Mesh MeshFactory::unitRectangle() {
 	return mesh;
 }
 
-std::shared_ptr<Mesh> MeshFactory::QuadWithUV(const std::vector<glm::vec2>* UVs) {
+std::shared_ptr<Dexium::Mesh> Dexium::MeshFactory::QuadWithUV(const std::vector<glm::vec2>* UVs) {
 	auto mesh = std::make_shared<Mesh>();
 	mesh->type = MeshType::RECTANGLE;
 

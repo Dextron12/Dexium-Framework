@@ -77,6 +77,8 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 
 	width = windowWidth; height = windowHeight;
 
+	TraceLog(LOG_INFO, "[WindowContext]: Dexium-Window initiated. Using Dexium {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
+
 	// initialisation complete, now enable appState
 	ctx.appState = true;
 

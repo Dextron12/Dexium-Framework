@@ -3,16 +3,17 @@
 //
 
 #include <core/SpriteAnimations.hpp>
+#include <core/Error.hpp>
 
 #ifdef DEXIUM_HAS_NLOHMANN_JSON
 #include <nlohmann/json.hpp>
-#include <core/config.hpp> // Contains engine_core versioning & core configurations
+#include <core/versionControl.hpp> // Contains engine_core versioning & core configurations
 #include <fstream> // For file writing
 
 #endif
 
 
-AnimatedSprite::AnimatedSprite(const std::string &fileName, std::shared_ptr<Camera> camera) {
+Dexium::AnimatedSprite::AnimatedSprite(const std::string &fileName, std::shared_ptr<Camera> camera) {
     m_spr = std::make_unique<Spritesheet>(fileName);
     if (!m_spr) {
         TraceLog(LOG_ERROR, "[SpriteAnimator]: Failed to generate Sprite obj");
@@ -27,11 +28,11 @@ AnimatedSprite::AnimatedSprite(const std::string &fileName, std::shared_ptr<Came
     m_spr->camera = camera;
 }
 
-void AnimatedSprite::setShader(const std::string& shaderID) {
+void Dexium::AnimatedSprite::setShader(const std::string& shaderID) {
     m_spr->setShader(shaderID);
 }
 
-void AnimatedSprite::setSequence(const std::string& name, std::initializer_list<newSeqFrame> frames, float defaultDuration, bool loop) {
+void Dexium::AnimatedSprite::setSequence(const std::string& name, std::initializer_list<newSeqFrame> frames, float defaultDuration, bool loop) {
     if (!m_spr) {
         TraceLog(LOG_ERROR, "[SpriteAnimator]: This is a corrupt animator. Please retire this object!");
         return;
@@ -61,14 +62,14 @@ void AnimatedSprite::setSequence(const std::string& name, std::initializer_list<
 
 }
 
-void AnimatedSprite::popSequence(const std::string &name) {
+void Dexium::AnimatedSprite::popSequence(const std::string &name) {
     auto seq = m_sequences.find(name);
     if (seq != m_sequences.end()) {
         m_sequences.erase(seq);
     }
 }
 
-void AnimatedSprite::setFrameTime(const std::string &subSpriteID, float timeMS) {
+void Dexium::AnimatedSprite::setFrameTime(const std::string &subSpriteID, float timeMS) {
     // Iterate through sequences looking for any matches
     for (auto& seq : m_sequences) {
         auto it = std::find_if(seq.second.frames.begin(), seq.second.frames.end(),
@@ -84,16 +85,16 @@ void AnimatedSprite::setFrameTime(const std::string &subSpriteID, float timeMS) 
     TraceLog(LOG_WARNING, "[SpriteAnimator]: FrameID '%s' couldn't be found in the current sequences.\nCould not adjust frame timing to '%f'", subSpriteID.c_str(), timeMS);
 }
 
-void AnimatedSprite::resetFrameTime(const std::string &subSpriteID) {
+void Dexium::AnimatedSprite::resetFrameTime(const std::string &subSpriteID) {
     setFrameTime(subSpriteID, 0.f);
 }
 
-bool AnimatedSprite::hasFrameChanged() {
+bool Dexium::AnimatedSprite::hasFrameChanged() {
     return m_changedFrame;
 }
 
 
-void AnimatedSprite::changeDefaultTime(const std::string &seqID, float timeMS) {
+void Dexium::AnimatedSprite::changeDefaultTime(const std::string &seqID, float timeMS) {
     // Find seq
     auto seq = m_sequences.find(seqID);
     if (seq != m_sequences.end()) {
@@ -102,7 +103,7 @@ void AnimatedSprite::changeDefaultTime(const std::string &seqID, float timeMS) {
     }
 }
 
-void AnimatedSprite::update(const std::string &seqID, float deltaTime) {
+void Dexium::AnimatedSprite::update(const std::string &seqID, float deltaTime) {
     auto it = m_sequences.find(seqID);
     if (it == m_sequences.end()) {
         TraceLog(LOG_ERROR, "[SpriteAnimator]: Cannot update sequence: '%s', it does not exist", seqID.c_str());
@@ -144,7 +145,7 @@ void AnimatedSprite::update(const std::string &seqID, float deltaTime) {
     }
 }
 
-void AnimatedSprite::render(const std::string& seqName, const glm::vec4& pos) {
+void Dexium::AnimatedSprite::render(const std::string& seqName, const glm::vec4& pos) {
     // Assumes the end-user has called update(seqID) for the requested sequence
 
     //Check if the sequence exists:
@@ -161,13 +162,13 @@ void AnimatedSprite::render(const std::string& seqName, const glm::vec4& pos) {
     m_spr->drawSprite(idx.second.id, {pos.x, pos.y, 0.0f}, {pos.z, pos.w, 0.0f}, glm::vec3(0));
 }
 
-void AnimatedSprite::updateAndRender(const std::string &seqName, float deltaTime, const glm::vec4 &pos) {
+void Dexium::AnimatedSprite::updateAndRender(const std::string &seqName, float deltaTime, const glm::vec4 &pos) {
     update(seqName, deltaTime);
     render(seqName, pos);
 }
 
 
-void AnimatedSprite::writeToFile(const std::string& fileName) {
+void Dexium::AnimatedSprite::writeToFile(const std::string& fileName) {
     // Check for any sequences to write
     if (m_sequences.empty()) {
         TraceLog(LOG_INFO, "[SpriteAnimator]: No sequences to record to file");

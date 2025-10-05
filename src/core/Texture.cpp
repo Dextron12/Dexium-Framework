@@ -1,32 +1,16 @@
 #include <core/Texture.hpp>
 
+#include <core/VFS.hpp>
+#include <core/Error.hpp>
+
 #include <string>
 #include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-const char* vertexTextureShader = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec2 aUV;\n"
-"out vec2 TexCoord;\n"
-"uniform mat4 model;\n"
-"uniform mat4 projection;\n"
-"void main(){\n"
-"	gl_Position = projection * model * vec4(aPos, 1.0);\n"
-"	TexCoord = aUV;\n"
-"}\0";
 
-const char* fragmentTextureShader = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec2 TexCoord;\n"
-"uniform sampler2D texture1;\n"
-"void main(){\n"
-"	FragColor = texture(texture1, TexCoord);\n"
-"}\0";
-
-
-Texture2D::Texture2D() : width(0), height(0), format(0) {
+Dexium::Texture2D::Texture2D() : width(0), height(0), format(0) {
 
 	// Generate Mesh object;
 	//mesh = std::make_unique<Mesh>();
@@ -36,7 +20,7 @@ Texture2D::Texture2D() : width(0), height(0), format(0) {
 	glGenTextures(1, &ID);
 }
 
-void Texture2D::load(const std::string& filePath, FilterMode mode) {
+void Dexium::Texture2D::load(const std::string& filePath, FilterMode mode) {
 
 	//Validate if file exists:
 	if (!VFS::exists(filePath)) {

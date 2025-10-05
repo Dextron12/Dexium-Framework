@@ -1,50 +1,52 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include <iostream>
 #include <string>
-#include <fstream>
-#include <sstream>
 
 //std::string SHADER_2D_VERTEX;
 //std::string SHADER_2D_FRAGMENT;
 
-extern const std::string SHADER_2D_VERTEX;
-extern const std::string SHADER_2D_FRAGMENT;
-
-void displayMat4(const glm::mat4& m);
-
-class Shader {
-public:
-	unsigned int ID;
-
-	// Just stores the data. call compile() for shader propgram to be built.
-	Shader() = default;
-	Shader(const std::string& vertex, const std::string& fragment, bool areFiles = true);
-
-	void compile();
+namespace Dexium {
 
 
-	void use();
+	extern const std::string SHADER_2D_VERTEX;
+	extern const std::string SHADER_2D_FRAGMENT;
 
-	void setBool(const std::string& name, bool value) const;
-	void setInt(const std::string& name, int value) const;
-	void setFloat(const std::string& name, float value) const;
+	void displayMat4(const glm::mat4& m);
 
-	void setVec2(const std::string& name, glm::vec2 value) const;
-	void setVec3(const std::string& name, glm::vec3 value) const;
-	void setVec4(const std::string& name, glm::vec4 value) const;
+	class Shader {
+	public:
+		unsigned int ID;
 
-	void setMat4(const std::string& name, glm::mat4 value) const;
+		// Just stores the data. call compile() for shader propgram to be built.
+		Shader() = default;
+		Shader(const std::string& vertex, const std::string& fragment, bool areFiles = true);
 
-private:
-	std::string vertexCode, fragmentCode;
-	std::string vertexPath, fragmentPath;
-	bool usingFiles;
-};
+		void compile();
+
+
+		void use();
+
+		void setBool(const std::string& name, bool value) const;
+		void setInt(const std::string& name, int value) const;
+		void setFloat(const std::string& name, float value) const;
+
+		void setVec2(const std::string& name, glm::vec2 value) const;
+		void setVec3(const std::string& name, glm::vec3 value) const;
+		void setVec4(const std::string& name, glm::vec4 value) const;
+
+		void setMat4(const std::string& name, glm::mat4 value) const;
+
+	private:
+		std::string vertexCode, fragmentCode;
+		std::string vertexPath, fragmentPath;
+		bool usingFiles;
+	};
+
+
+}
 
 
 #endif

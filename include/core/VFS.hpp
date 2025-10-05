@@ -24,7 +24,7 @@ namespace Dexium {
 
     class VFS {
     public:
-        static void Init();
+        static void init();
 
         static std::unique_ptr<std::filesystem::path> resolve(const std::string& relPath);
 

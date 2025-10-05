@@ -3,23 +3,11 @@
 #ifndef APPLICATION_LAYER
 #define APPLICATION_LAYER
 
-#include <core/Mesh.hpp>
-#include <core/Texture.hpp>
-#include <core/Shader.hpp>
 
-
-#include <core/Timer.hpp>
-#include <core/Colour.hpp>
-#include <core/config.hpp>
 #include <core/helpers.h>
 
-#include <core/window.hpp>
-#include <core/AssetManager.hpp>
-#include <core/Camera.hpp>
-#include <core/Sprite.hpp>
-#include <core/SpriteAnimations.hpp>
-#include <core/Primitives.hpp>
-#include <core/Material.hpp>
+#include <core/WindowContext.hpp>
+
 
 namespace Dexium {
 

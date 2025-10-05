@@ -5,10 +5,10 @@
 #ifndef DEXIUM_CONFIG_HPP
 #define DEXIUM_CONFIG_HPP
 
-namespace VERSION {
+namespace Dexium::VERSION {
     inline int major = 0;
-    inline int minor = 0;
-    inline int patch = 15;
+    inline int minor = 1;
+    inline int patch = 0;
 }
 
 

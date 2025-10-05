@@ -2,10 +2,12 @@
 #include <core/Sprite.hpp>
 #include <core/Texture.hpp>
 #include <core/AssetManager.hpp>
+#include <core/Error.hpp>
+#include <core/VFS.hpp>
 
 #include <filesystem>
 
-Sprite::Sprite(const std::string& fileName) {
+Dexium::Sprite::Sprite(const std::string& fileName) {
 	// Gte assets
 	auto& assets = AssetManager::getInstance();
 
@@ -47,9 +49,9 @@ Sprite::Sprite(const std::string& fileName) {
 
 }
 
-Sprite::~Sprite(){}
+Dexium::Sprite::~Sprite(){}
 
-void Sprite::setShader(const std::string& shaderID) {
+void Dexium::Sprite::setShader(const std::string& shaderID) {
 	if (AssetManager::getInstance().queryAsset(shaderID)) {
 		m_shaderID = shaderID;
 	} else {
@@ -57,7 +59,7 @@ void Sprite::setShader(const std::string& shaderID) {
 	}
 }
 
-void Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
+void Dexium::Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
 	auto& assets = AssetManager::getInstance();
 
 	auto shader = assets.use<Shader>(m_shaderID);
@@ -106,7 +108,7 @@ void Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
 
 // Spritesheet implementation
 
-Spritesheet::Spritesheet(const std::string &fileName) {
+Dexium::Spritesheet::Spritesheet(const std::string &fileName) {
 	auto& assets = AssetManager::getInstance();
 
 	// Generate a Renderable
@@ -143,11 +145,11 @@ Spritesheet::Spritesheet(const std::string &fileName) {
 	m_sprite->material->clearUniforms(); // Uhmm, Does this clear uniforms or uniforms + textures?
 }
 
-Spritesheet::~Spritesheet() {
+Dexium::Spritesheet::~Spritesheet() {
 
 }
 
-void Spritesheet::setSprite(const std::string &spriteID, const glm::vec4 &spriteDim) {
+void Dexium::Spritesheet::setSprite(const std::string &spriteID, const glm::vec4 &spriteDim) {
 	auto it = m_frames.find(spriteID);
 	if (it != m_frames.end()) {
 		TraceLog(LOG_WARNING, "[Spritesheet]: The subSprite '%s' is already defined.", spriteID.c_str());
@@ -159,13 +161,13 @@ void Spritesheet::setSprite(const std::string &spriteID, const glm::vec4 &sprite
 	m_frames[spriteID] = spriteDim;
 }
 
-void Spritesheet::remSprite(const std::string &spriteID) {
+void Dexium::Spritesheet::remSprite(const std::string &spriteID) {
 	if (m_frames.erase(spriteID) == 0) {
 		TraceLog(LOG_WARNING, "[Spritesheet]: Redundant removal call of subSprite '%s'.", spriteID.c_str());
 	}
 }
 
-void Spritesheet::setShader(const std::string &shaderID) {
+void Dexium::Spritesheet::setShader(const std::string &shaderID) {
 	if (AssetManager::getInstance().queryAsset(shaderID)) {
 		m_shaderID = shaderID;
 	} else {
@@ -173,7 +175,7 @@ void Spritesheet::setShader(const std::string &shaderID) {
 	}
 }
 
-void Spritesheet::load(const std::string &fileName) {
+void Dexium::Spritesheet::load(const std::string &fileName) {
 	/*if (!fileName.empty()) {
 		// replace fileName (Allowed for hot-reload support)
 		m_texturePath = fileName;
@@ -194,7 +196,7 @@ void Spritesheet::load(const std::string &fileName) {
 
 }
 
-void Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, glm::vec3 scale, glm::vec3 rot) {
+void Dexium::Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, glm::vec3 scale, glm::vec3 rot) {
 	auto &assets = AssetManager::getInstance();
 
 	auto shader = assets.use<Shader>(m_shaderID);
@@ -242,7 +244,7 @@ void Spritesheet::drawSprite(const std::string &spriteID, const glm::vec3 pos, g
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-const std::string& Spritesheet::getTextureID() {
+const std::string& Dexium::Spritesheet::getTextureID() {
 	return m_spriteID;
 }
 

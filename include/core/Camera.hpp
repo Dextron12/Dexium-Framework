@@ -4,27 +4,33 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-enum ProjectionType {
-	PERSPECTIVE,
-	ORTHOGRAPHIC,
-	UNDEFINED
-};
-
-class Camera {
-public:
-	// Setting the projType to Orthographic, internally fixes it as a 2D camera. Setting it perspective sets it as a 3D camera.
-	Camera(int screenWidth, int screenHeight, ProjectionType projType);
-
-	const glm::mat4& getProjection() const;
-	void setProjection(int screenWidth, int screenHeight, float zNear, float zFar);
+namespace Dexium {
 
 
-	ProjectionType type;
+	enum ProjectionType {
+		PERSPECTIVE,
+		ORTHOGRAPHIC,
+		UNDEFINED
+	};
 
-private:
-	glm::mat4 projection;
+	class Camera {
+	public:
+		// Setting the projType to Orthographic, internally fixes it as a 2D camera. Setting it perspective sets it as a 3D camera.
+		Camera(int screenWidth, int screenHeight, ProjectionType projType);
 
-	glm::vec2 windowSize;
-};
+		const glm::mat4& getProjection() const;
+		void setProjection(int screenWidth, int screenHeight, float zNear, float zFar);
+
+
+		ProjectionType type;
+
+	private:
+		glm::mat4 projection;
+
+		glm::vec2 windowSize;
+	};
+
+
+}
 
 #endif

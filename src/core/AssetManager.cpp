@@ -1,11 +1,13 @@
 
 #include <core/AssetManager.hpp>
+#include <core/Error.hpp>
+#include <core/VFS.hpp>
 
 // Register Dexium default laoders on static init:
 namespace  {
 	struct DefaultLoaderRegistrar {
 		DefaultLoaderRegistrar() {
-			auto& mgr = AssetManager::getInstance();
+			auto& mgr = Dexium::AssetManager::getInstance();
 
 			// Texture2D Loader:
 			/*mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
@@ -23,31 +25,31 @@ namespace  {
 			*/
 
 			// Texture2D Loader
-			mgr.registerLoader<Texture2D>(AssetType::Texture, [](const AssetEntry& entry) -> std::shared_ptr<Texture2D> {
-				if (entry.type != AssetType::Texture) {
-					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Texture2D");
+			mgr.registerLoader<Dexium::Texture2D>(Dexium::AssetType::Texture, [](const Dexium::AssetEntry& entry) -> std::shared_ptr<Dexium::Texture2D> {
+				if (entry.type != Dexium::AssetType::Texture) {
+					Dexium::TraceLog(Dexium::LOG_ERROR, "[Asset-Man]: Asset is not a registered Texture2D");
 					return nullptr;
 				}
 				if (entry.registryPaths.empty()) {
-					TraceLog(LOG_ERROR, "[Asset-Man]: Cannot create a Texture2D resource without a filePath");
+					Dexium::TraceLog(Dexium::LOG_ERROR, "[Asset-Man]: Cannot create a Texture2D resource without a filePath");
 					return nullptr;
 				}
-				auto tex = std::make_shared<Texture2D>();
-				tex->load(entry.registryPaths[0], FilterMode::Linear);
+				auto tex = std::make_shared<Dexium::Texture2D>();
+				tex->load(entry.registryPaths[0], Dexium::FilterMode::Linear);
 				return tex;
 				});
 
 			// Shader Loader:
-			mgr.registerLoader<Shader>(AssetType::Shader, [](const AssetEntry& entry) -> std::shared_ptr<Shader> {
-				if (entry.type != AssetType::Shader) {
-					TraceLog(LOG_ERROR, "[Asset-Man]: Asset is not a registered Shader");
+			mgr.registerLoader<Dexium::Shader>(Dexium::AssetType::Shader, [](const Dexium::AssetEntry& entry) -> std::shared_ptr<Dexium::Shader> {
+				if (entry.type != Dexium::AssetType::Shader) {
+					Dexium::TraceLog(Dexium::LOG_ERROR, "[Asset-Man]: Asset is not a registered Shader");
 					return nullptr;
 				}
 				if (entry.registryPaths.size() < 2) {
-					TraceLog(LOG_ERROR, "[Asset-Man]: A shader requiers a vertexPath & fragmentPath\n(OR: provide srcCode fo each as the path args)");
+					Dexium::TraceLog(Dexium::LOG_ERROR, "[Asset-Man]: A shader requiers a vertexPath & fragmentPath\n(OR: provide srcCode fo each as the path args)");
 					return nullptr;
 				}
-				auto ptr = std::make_shared<Shader>(entry.registryPaths[0], entry.registryPaths[1], entry.fromFiles);
+				auto ptr = std::make_shared<Dexium::Shader>(entry.registryPaths[0], entry.registryPaths[1], entry.fromFiles);
 				ptr->compile();
 				return ptr;
 				});
@@ -57,12 +59,12 @@ namespace  {
 	};
 };
 
-void AssetManager::registerDefaultLoaders() {
+void Dexium::AssetManager::registerDefaultLoaders() {
 	static DefaultLoaderRegistrar registrar;
 	(void)registrar;
 }
 
-void AssetManager::registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile, bool validate) {
+void Dexium::AssetManager::registerAsset(const std::string& id, AssetType type, const std::vector<std::string>& paths, bool fromFile, bool validate) {
 	
 	// check for validation:
 	if (validate && fromFile) {
@@ -91,7 +93,7 @@ void AssetManager::registerAsset(const std::string& id, AssetType type, const st
 	assets.insert_or_assign(id, entry);
 }
 
-void AssetManager::registerAsset(const std::string& id, MeshType type, std::shared_ptr<Mesh> meshData) {
+void Dexium::AssetManager::registerAsset(const std::string& id, MeshType type, std::shared_ptr<Mesh> meshData) {
 	AssetEntry entry;
 	entry.fromFiles = false;
 
@@ -122,7 +124,7 @@ void AssetManager::registerAsset(const std::string& id, MeshType type, std::shar
 }
 
 // Simply checks of the asset is registered. Note: This func makes noa ttempt at valdiating internal asset data!
-bool AssetManager::queryAsset(const std::string& assetID) {
+bool Dexium::AssetManager::queryAsset(const std::string& assetID) {
 	if (assets.find(assetID) != assets.end()) {
 		return true;
 	}
@@ -131,7 +133,7 @@ bool AssetManager::queryAsset(const std::string& assetID) {
 	}
 }
 
-void AssetManager::unload(const std::string& id) {
+void Dexium::AssetManager::unload(const std::string& id) {
 	//check if asset exists
 	const auto& it = assets.find(id);
 	if (it != assets.end()) {
@@ -148,7 +150,7 @@ void AssetManager::unload(const std::string& id) {
 	// ELSE: Silently quit, no need to log if there is nothing to delete
 }
 
-void AssetManager::clear() {
+void Dexium::AssetManager::clear() {
 	if (assets.empty()) return;
 
 	TraceLog(LOG_INFO, "[Asset-Man]: Clearing %d assets", assets.size());

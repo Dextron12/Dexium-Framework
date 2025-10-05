@@ -1,10 +1,10 @@
 
 #include "core/Material.hpp"
 
-Material::Material(const std::string& shaderID) {
+Dexium::Material::Material(const std::string& shaderID) {
 	if (!AssetManager::getInstance().queryAsset(shaderID)) {
 		// Shader program does not exist!
-		TraceLog(LOG_ERROR, "[Material]: No Shader program: '%s' exists!\nMaterial will not render", shaderID.c_str());
+		TraceLog(LOG_ERROR, "[Material]: No Shader program: '{}' exists!\nMaterial will not render", shaderID);
 		m_shaderID.clear();
 		return; // early return to prevent material initialisation.
 	}
@@ -15,19 +15,19 @@ Material::Material(const std::string& shaderID) {
 
 
 
-bool Material::hasShader() {
+bool Dexium::Material::hasShader() {
 	return AssetManager::getInstance().queryAsset(m_shaderID);
 }
 
-void Material::setUniform(const std::string& name, const UniformValue& value) {
+void Dexium::Material::setUniform(const std::string& name, const UniformValue& value) {
 	m_uniforms[name] = value;
 }
 
-void Material::clearUniforms() {
+void Dexium::Material::clearUniforms() {
 	m_uniforms.clear();
 }
 
-void Material::setTexture(const TextureType type, const std::string& name, const std::string& textureID) {
+void Dexium::Material::setTexture(const TextureType type, const std::string& name, const std::string& textureID) {
 	std::string schName;
 	if (textureID == "" || textureID.size() == 0) {
 		schName = name;
@@ -66,7 +66,7 @@ void Material::setTexture(const TextureType type, const std::string& name, const
 	m_textures[name] = schName;
 }
 
-void Material::bind() const {
+void Dexium::Material::bind() const {
 	// Get AssetManager handle:
 	auto& assets = AssetManager::getInstance();
 

@@ -6,11 +6,10 @@
 
 #include <glm/vec4.hpp>
 
-#include "core/Colour.hpp"
 #include "core/Shader.hpp"
 #include "core/AssetManager.hpp"
 
-void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) {
+void Dexium::Primitives::FilledRect(glm::vec4 pos, glm::vec4 colour, const Shader& shader) {
 
     Transform model;
     model.position = glm::vec3(pos.x, pos.y, 0.0f);
@@ -25,7 +24,7 @@ void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) 
 
     // Configure shader params:
     shader.setMat4("model", model.toModelMatrix());
-    shader.setVec4("uColor", colour.normalized());
+    shader.setVec4("uColor", colour);//.normalized());
 
 
     // Configure default white texture for usage
@@ -43,7 +42,7 @@ void Primitives::FilledRect(glm::vec4 pos, Colour colour, const Shader& shader) 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Primitives::Rect(glm::vec4 pos, Colour colour, const Shader &shader, int thickness) {
+void Dexium::Primitives::Rect(glm::vec4 pos, glm::vec4 colour, const Shader &shader, int thickness) {
     // pos = x, y, width, height
     // thickness = border thickness in pixels/units
 
@@ -61,7 +60,7 @@ void Primitives::Rect(glm::vec4 pos, Colour colour, const Shader &shader, int th
     glClear(GL_STENCIL_BUFFER_BIT);
 
     // Set color
-    shader.setVec4("uColor", colour.normalized());
+    shader.setVec4("uColor", colour);//.normalized());
 
     // Outer rect model
     Transform outerModel;

@@ -1,0 +1,188 @@
+// DEXIUM-FRAMEWORK (C) Dextron12, 2025.
+// This is an experimental game framework/engine built off of OpenGL.
+// Dexium-Framework has been inspired by projects like Hazel(TheCherno Studio), DevDuck's devlogs, ThinMatrix's devlogs
+// And most importantly; Joey De Vries amazing book on modern OpenGL LearnOpenGL.com
+
+
+#include <Dexium.hpp>
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
+
+#include "core/Error.hpp"
+#include "core/WindowContext.hpp"
+#include "core/versionControl.hpp"
+
+void EngineState::init() {
+    get(); // Forces init
+}
+
+void EngineState::shutdown() {
+    // Shutdown code here
+    auto& engine = get();
+
+
+    engine.appState = false;
+}
+
+EngineState &EngineState::get() {
+    static EngineState instance;
+    return instance;
+}
+
+EngineState::EngineState() {
+    // Eninge startup/initlisation here...
+
+    //Init GLFW
+    if (glfwInit() == GLFW_FALSE) {
+        const char* errorDesc;
+        int code = glfwGetError(&errorDesc);
+        if (code != GLFW_NO_ERROR){
+            Dexium::TraceLog(Dexium::LOG_FATAL,
+                "Failed to initiate core lib [GLFW]\nGLFW Error: [{}]:\nAborting program...",
+                code, errorDesc ? errorDesc : "Unknown Error");
+
+        }
+        get().GLFW_INIT = false;
+    } else {
+        get().GLFW_INIT = true;
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // DO NOT CALL ANY glad FUNCTIONS HERE, it is initalised after a windowContext is created
+
+    // Set GLFW ErrorCallback
+    glfwSetErrorCallback([](int error, const char* description) {
+        TraceLog(Dexium::LOG_TRACE, "GLFW Error[Code: {}]: {}", error, description);
+    });
+
+    // Init VFS (Virtual File System). Will fetch the execPath
+    VFS::init();
+
+    TraceLog(Dexium::LOG_INFO, "[Dexium-Core]: Core sub-systems initialized. Using Dexium: {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
+
+    appState = false; // remains false, until a WindowContext is created and succeeds
+}
+
+void EngineState::run() {
+    // Check state configurations
+    auto& ctx = get();
+
+    if (!ctx.GLFW_INIT || !ctx.GLAD_INIT) {
+        if (!ctx.GLAD_INIT && ctx.ENGINE_HEADLESS) return; // Allows check to be nullified if running in headless mode
+        TraceLog(Dexium::LOG_FATAL, "One or more core libraries are not initialised\nDid you forget to call Dexium::init()?");
+    }
+
+    if (!ctx.VFS_INIT) {
+        TraceLog(Dexium::LOG_WARNING, "The Virtual FileSystem is not initialized. Many sub-systems depend on the executabe path, without it your application may crash");
+    }
+
+    if (!ctx._windowContext && !ctx.ENGINE_HEADLESS) {
+        TraceLog(Dexium::LOG_ERROR, "No WindowContext is bound to the engine\nApplication cannot run without a windowContext");
+    }
+
+    while (ctx.appState) {
+        if (!ctx.ENGINE_HEADLESS && ctx._windowContext) {
+            // Running with a valid WindwoContext. Update frame
+            ctx._windowContext->startFrame();
+        }
+
+        // update deltaTime
+        auto now = std::chrono::steady_clock::now();
+        std::chrono::duration<float> elapsed = now - ctx._lastFrameTime;
+        ctx._deltaTime = elapsed.count(); // convert to float seconds
+        ctx._lastFrameTime = now;
+
+
+        // Clear screen from prev frame
+        glClearColor(ctx._scrCol.x, ctx._scrCol.y, ctx._scrCol.z, ctx._scrCol.w);
+        glClear(GL_COLOR_BUFFER_BIT); // Other buffers need to also be managed here
+
+        // execute currently bound layer
+
+        // end frame
+        if (!ctx.ENGINE_HEADLESS && ctx._windowContext) {
+            ctx._windowContext->endFrame();
+        }
+    }
+}
+
+void EngineState::attachWindow(const std::string &windowTitle, const int windowWidth, const int windowHeight) {
+    get()._windowContext = std::make_unique<Dexium::WindowContext>(windowTitle, windowWidth, windowHeight);
+}
+
+void EngineState::detachWindow() {
+    if (get()._windowContext) {
+        // reset ptr
+        get()._windowContext.reset();
+        TraceLog(Dexium::LOG_WARNING, "Active WindowContext has been detached");
+    } else {
+        TraceLog(Dexium::LOG_WARNING, "No WindowContext is attached. Cannot detach one");
+    }
+}
+
+Dexium::WindowContext* EngineState::getWindow() {
+    auto& ctx = get();
+    if (!ctx._windowContext) {
+        TraceLog(Dexium::LOG_WARNING, "Cannot access a windowContext, none is bound to the engine!");
+    }
+    return ctx._windowContext ? ctx._windowContext.get() : nullptr;
+}
+
+
+void EngineState::setBgColor(const glm::vec4 &color) {
+    //convert FMT colour to vec colour
+    get()._scrCol = glm::vec4(
+        color.x / 255.0f,
+        color.y / 255.0f,
+        color.z / 255.0f,
+        color.w / 255.0f);
+}
+
+void EngineState::setBgColor(const glm::vec3 &color) {
+    get()._scrCol = glm::vec4(
+        color.x / 255.0f,
+        color.y / 255.0f,
+        color.z / 255.0f,
+        1.0f);
+}
+
+void EngineState::setBgColor(const fmt::rgb& color) {
+    get()._scrCol = glm::vec4(
+        color.r / 255.0f,
+        color.g / 255.0f,
+        color.b / 255.0f,
+        255.0f);
+}
+
+
+float EngineState::getDeltaTime() {
+    return get()._deltaTime;
+}
+
+void EngineState::addLayer(std::shared_ptr<Dexium::Layer> layer) {
+    get()._layers[layer->ID] = layer;
+}
+
+void EngineState::Transtion2Layer(const std::string &ID, std::function<void()> transitionScript) {
+    // First check if layer exists
+    if (get()._layers.find(ID) == get()._layers.end()) {
+        Dexium::TraceLog(Dexium::LOG_WARNING, "Cannot transtion to layer {} as it does not exist within the engine", ID);
+        return;
+    }
+
+    // Layer exists, run script if provided
+    if (transitionScript != nullptr) {
+        // execute script
+        transitionScript();
+    }
+
+    // Now change to new layer
+    get()._currentLayer = get()._layers[ID];
+}
+
+
+
+
+

@@ -8,7 +8,7 @@
 #include "core/Error.hpp"
 
 
-void Dexium::VFS::Init() {
+void Dexium::VFS::init() {
 #ifdef _WIN32
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);

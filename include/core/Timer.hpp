@@ -3,21 +3,27 @@
 
 #include <chrono>
 
-class Timer {
-public:
-	Timer(int durationMs);
+namespace Dexium {
 
-	void reset();
 
-	bool isFinished() const;
-	int getElapsedMs() const;
-	float getProgress() const;
+	class Timer {
+	public:
+		Timer(int durationMs);
 
-	void setDuration(int newDurationMs);
+		void reset();
 
-private:
-	int duration;
-	std::chrono::steady_clock::time_point start;
-};
+		bool isFinished() const;
+		int getElapsedMs() const;
+		float getProgress() const;
+
+		void setDuration(int newDurationMs);
+
+	private:
+		int duration;
+		std::chrono::steady_clock::time_point start;
+	};
+
+
+}
 
 #endif

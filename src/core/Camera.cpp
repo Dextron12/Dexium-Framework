@@ -1,7 +1,7 @@
 #include "core/Camera.hpp"
 
 
-Camera::Camera(int screenWidth, int screenHeight, ProjectionType projType) : windowSize(screenWidth, screenHeight), type(projType) {
+Dexium::Camera::Camera(int screenWidth, int screenHeight, ProjectionType projType) : windowSize(screenWidth, screenHeight), type(projType) {
 	// Configure projection
 	if (type == ORTHOGRAPHIC) {
 		// Assumes a 2D projection (render in screen space(px))
@@ -21,7 +21,7 @@ Camera::Camera(int screenWidth, int screenHeight, ProjectionType projType) : win
 }
 
 
-void Camera::setProjection(int screenWidth, int screenHeight, float zNear, float zFar) {
+void Dexium::Camera::setProjection(int screenWidth, int screenHeight, float zNear, float zFar) {
 	if (type ==		ORTHOGRAPHIC) {
 		projection = glm::ortho(0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f);
 	} else if (type == PERSPECTIVE) {
@@ -32,6 +32,6 @@ void Camera::setProjection(int screenWidth, int screenHeight, float zNear, float
 }
 
 
-const glm::mat4& Camera::getProjection() const {
+const glm::mat4& Dexium::Camera::getProjection() const {
 	return projection;
 }
