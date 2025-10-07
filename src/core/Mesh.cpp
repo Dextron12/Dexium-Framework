@@ -21,8 +21,7 @@ void Dexium::Mesh::upload(const void* vertexData, GLsizeiptr vertexSize, std::fu
 	
 	// Validate Vertex data:
 	if (!vertexData) {
-		//TraceLog(LOG_ERROR, "[Mesh Uploader]: No Vertex data provided for Mesh: '%s'", name.c_str());
-		TraceLog(LOG_INFO, "[Mesh Uplaoder]: Ensure your Mesh factory Fucntion is working!");
+		TraceLog(LOG_INFO, "[Mesh Uploader]: Ensure your Mesh factory Function is working!\nThere is no present vertex data");
 		return;
 	}
 	if (vertexCount == 0) {

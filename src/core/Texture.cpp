@@ -63,7 +63,7 @@ void Dexium::Texture2D::load(const std::string& filePath, FilterMode mode) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		TraceLog(LOG_ERROR, "[Textrue]: Failed to read texture: '%s'", filePath.c_str());
+		TraceLog(LOG_ERROR, "[Textrue]: Failed to read texture: '{}'", filePath);
 		return;
 	}
 	stbi_image_free(data);
@@ -71,7 +71,7 @@ void Dexium::Texture2D::load(const std::string& filePath, FilterMode mode) {
 	//Unbind TEXTURE_2D from the texture (Prevents crossing or overflow)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	TraceLog(LOG_INFO, "[Texture]: Loaded texture: '%s'", std::filesystem::path(filePath).stem().string().c_str());
+	TraceLog(LOG_INFO, "[Texture]: Loaded texture: '{}'", std::filesystem::path(filePath).stem().string());
 
 }
 

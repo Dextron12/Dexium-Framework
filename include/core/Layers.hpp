@@ -4,8 +4,6 @@
 #define APPLICATION_LAYER
 
 
-#include <core/helpers.h>
-
 #include <core/WindowContext.hpp>
 
 

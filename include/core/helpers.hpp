@@ -4,8 +4,6 @@
 
 #ifndef DEXIUM_HELPERS_H
 #define DEXIUM_HELPERS_H
-#include <glad/glad.h>
-#include <glm/vec4.hpp>
 #include <string>
 
 #include "Layers.hpp"

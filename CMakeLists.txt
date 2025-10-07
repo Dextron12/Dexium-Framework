@@ -1,107 +1,63 @@
 cmake_minimum_required(VERSION 3.20)
+project(Dexium VERSION 0.1.0 LANGUAGES CXX)
 
-#Helper function for optional dependencies
-function(dexium_add_optional_library TARGET OPTION_NAME SYSTEM_NAME VENDOR_PATH INTERFACE_TARGET)
-    if (${OPTION_NAME})
-        # First try system package
-        find_package(${SYSTEM_NAME} CONFIG QUIET)
-
-        if (TARGET ${INTERFACE_TARGET})
-            message(STATUS "Using system-installed ${SYSTEM_NAME}")
-        else()
-            # Fall back to vendor copy relative to project root
-            set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/${VENDOR_PATH}")
-            if (EXISTS "${VENDOR_DIR}/CMakeLists.txt")
-                message(STATUS "System ${SYSTEM_NAME} not found, using vendored copy at ${VENDOR_DIR}")
-                add_subdirectory(${VENDOR_DIR})
-            else()
-                message(FATAL_ERROR "Optional library ${SYSTEM_NAME} not found (system or vendor). Looked in ${VENDOR_DIR}")
-            endif()
-        endif()
-
-        target_link_libraries(${TARGET} PRIVATE ${INTERFACE_TARGET})
-
-        string(TOUPPER "${SYSTEM_NAME}" SYS_UPPER)
-        string(REPLACE "-" "_" SYS_UPPER "${SYS_UPPER}")
-        target_compile_definitions(${TARGET} PRIVATE DEXIUM_HAS_${SYS_UPPER}=1)
-    endif()
-endfunction()
-
-
-
-# Use vcpkg toolchain - Dont like it... suck it!
-if (DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            CACHE STRING "Vcpkg toolchain file" FORCE)
-endif()
-
-
-
-# Add other optional 3rd party libs here
-option(DEXIUM_USE_JSON "Build with nlohmann/json" ON)
-
-project(Dexium VERSION 0.0.11 LANGUAGES CXX)
-
-# Enable folders in DIEs
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# Set CXX Standards
+# ===== BASIC SETTINGS ======
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS off)
 
-# Gather source/header files
-file(GLOB DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
-file(GLOB DEXIUM_SRC_CORE CONFIGURE_DEPENDS src/core/*.cpp)
-file(GLOB DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
+# ===== GLOB FILES ========
+file(GLOB_RECURSE DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB_RECURSE DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 
-# Third Party OPTIONAL libs
-file(GLOB DEXIUM_EXT_STB CONFIGURE_DEPENDS third_party/STB/*.hpp)
-file(GLOB_RECURSE DEXIUM_EXT_FMT CONFIGURE_DEPENDS third_party/fmt/src/*)
+message(STATUS "Dexium Source Files: ${DEXIUM_SRC}")
 
-file(GLOB_RECURSE CORE_ENGINE core/*.hpp core/*.cpp)
-
-add_executable(Dexium-Core ${DEXIUM_SRC} ${DEXIUM_SRC_CORE} ${DEXIUM_HEADERS} ${DEXIUM_EXT_STB} ${DEXIUM_EXT_FMT})
-
-# Ensure at least one main.cpp exists
-if (NOT DEXIUM_SRC)
-    message(FATAL_ERROR "No source files found in src/*.cpp - nothing to build")
+# ===== CREATE LIBRARY =======
+# for debug mode, optionally make it an OBJECT library instead
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_library(Dexium OBJECT ${DEXIUM_SRC} ${DEXIUM_HEADERS})
+else()
+    add_library(Dexium STATIC ${DEXIUM_SRC} ${DEXIUM_HEADERS})
 endif()
 
-# Incldue directories
-target_include_directories(Dexium-Core PUBLIC include)
-target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/third_party/STB)
-target_include_directories(Dexium-Core PUBLIC ${CMAKE_SOURCE_DIR}/third_party/fmt)
-
-
-#Optional 3rd party libs
-dexium_add_optional_library(
-        Dexium-Core
-        DEXIUM_USE_JSON
-        nlohmann_json
-        third_party/nlohmann_json
-        nlohmann_json::nlohmann_json
+# ===== INCLUDE DIRECTORIES =====
+target_include_directories(Dexium PUBLIC
+${CMAKE_CURRENT_SOURCE_DIR}/include
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/STB
 )
 
-#Add fmt subdirector
-add_subdirectory(third_party/fmt)
-
-# Find packages via VCPKG
+# ===== THIRD-PARTY LIBS =======
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+add_subdirectory(third_party/fmt)
 
-# Link libraries
-target_link_libraries(Dexium-Core
-PRIVATE glfw
-PRIVATE glad::glad
-PRIVATE glm::glm
-PRIVATE fmt::fmt
+target_link_libraries(Dexium
+PUBLIC glfw
+PUBLIC glad::glad
+PUBLIC glm::glm
+PUBLIC fmt::fmt
 )
 
-# Group files in an IDE CLion/Visual Studio
-source_group("Source Files" FILES ${DEXIUM_SRC})
-source_group("Header Files" FILES ${DEXIUM_HEADERS})
-source_group("External Files" Files ${DEXIUM_EXT})
-source_group("CORE_ENGINE" FILES ${CORE-ENGINE})
+# ====== DEFINE MACROS FOR DEBUG/RELEASE =======
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(Dexium PUBLIC DEXIUM_DEBUG=1)
+else()
+    target_compile_definitions(Dexium PUBLIC DEXIUM_RELEASE=1)
+endif()
 
+# ===== OPTIONAL DEPENDENCIES =========
+option(DEXIUM_USE_JSON "Build with nlohmann/json" ON)
+if (DEXIUM_USE_JSON)
+    find_package(nlohmann_json CONFIG REQUIRED)
+    target_link_libraries(Dexium PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
+# ======= IDE GROUPING ========
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source" FILES ${DEXIUM_SRC})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Include" FILES ${DEXIUM_HEADERS})
+
+
+# aDD SUBdIRECTORY FOR TESTING
+add_subdirectory(Tests)

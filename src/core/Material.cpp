@@ -38,7 +38,7 @@ void Dexium::Material::setTexture(const TextureType type, const std::string& nam
 	auto tex = AssetManager::getInstance().use<Texture2D>(schName);
 	if (!tex) {
 		// No texture exists:
-		TraceLog(LOG_WARNING, "[Material]: No texture: '%s' could be found", schName);
+		TraceLog(LOG_WARNING, "[Material]: No texture: '{}' could be found", schName);
 		return;
 	}
 
@@ -57,7 +57,7 @@ void Dexium::Material::setTexture(const TextureType type, const std::string& nam
 			tex->textureUnit = 2;
 			break;
 		default:
-			TraceLog(LOG_WARNING, "[Material]: TextureType '%d' is not currently supported!", type);
+			TraceLog(LOG_WARNING, "[Material]: TextureType '{}' is not currently supported!", static_cast<int>(type));
 			break;
 
 	}
@@ -76,7 +76,7 @@ void Dexium::Material::bind() const {
 		shader = assets.use<Shader>(m_shaderID);
 	}
 	else {
-		TraceLog(LOG_ERROR, "[Material]: Failed to retrieve & bind shader program: '%s'", m_shaderID.c_str());
+		TraceLog(LOG_ERROR, "[Material]: Failed to retrieve & bind shader program: '{}'", m_shaderID);
 		return;
 	}
 
@@ -109,7 +109,7 @@ void Dexium::Material::bind() const {
 				shader->setMat4(name, v);
 			}
 			else {
-				TraceLog(LOG_WARNING, "[Material]: The uniform: '%s' attempts to set an unsupported value!", name);
+				TraceLog(LOG_WARNING, "[Material]: The uniform: '{}' attempts to set an unsupported value!", name);
 			}
 			}, value);
 	}	// I must reiterate how cool lambdas are! Templates, not so much
@@ -127,12 +127,12 @@ void Dexium::Material::bind() const {
 	for (auto& [name, tex] : m_textures) {
 		// First validate texture (An unlikely step,an s no invalid textures should exist)
 		if (!assets.queryAsset(tex)) {
-			TraceLog(LOG_ERROR, "Material configured with an invalid texture: '%s'", name.c_str());
+			TraceLog(LOG_ERROR, "Material configured with an invalid texture: '{}'", name);
 			return;
 		}
 		const std::shared_ptr<Texture2D>& texture = assets.use<Texture2D>(tex);
 		if (!texture) {
-			TraceLog(LOG_ERROR, "Material field to fetch configured texture: '%s'", name.c_str());
+			TraceLog(LOG_ERROR, "Material field to fetch configured texture: '{}'", name);
 			return;
 		}
 
@@ -159,8 +159,6 @@ void Dexium::Material::bind() const {
 		//std::cout << "Texture Unit: " << glName << std::endl;
 
 		shader->setInt(glName, unit);
-
-		//TraceLog(LOG_INFO, "[%s] is using samplerID: %i", tex.c_str(), unit);
 
 	}
 }

@@ -30,8 +30,9 @@ void Dexium::Layer::run() {
             TraceLog(LOG_WARNING, "No init function is bound for Layer: {}", ID);
         } else {
             // Call the init function
-            onInit();
+                onInit();
         }
+        init = true;
     }
 
     if (!onUpdate) {
@@ -41,7 +42,7 @@ void Dexium::Layer::run() {
     }
 
     if (!onRender) {
-        TraceLog(LOG_WARNING, "No OnRender() bound to Layer: {}", ID);
+        //TraceLog(LOG_WARNING, "No OnRender() bound to Layer: {}", ID);
     } else {
         onRender();
     }

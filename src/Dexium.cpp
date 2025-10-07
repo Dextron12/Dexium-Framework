@@ -41,10 +41,11 @@ EngineState::EngineState() {
                 code, errorDesc ? errorDesc : "Unknown Error");
 
         }
-        get().GLFW_INIT = false;
+        this->GLFW_INIT = false;
     } else {
-        get().GLFW_INIT = true;
+        this->GLFW_INIT = true;
     }
+
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -64,6 +65,11 @@ EngineState::EngineState() {
 
     appState = false; // remains false, until a WindowContext is created and succeeds
 }
+
+EngineState::~EngineState() {
+
+}
+
 
 void EngineState::run() {
     // Check state configurations
@@ -100,6 +106,12 @@ void EngineState::run() {
         glClear(GL_COLOR_BUFFER_BIT); // Other buffers need to also be managed here
 
         // execute currently bound layer
+        if (get()._currentLayer != nullptr) {
+            auto& layer = get()._currentLayer;
+
+            layer->run();
+        }
+
 
         // end frame
         if (!ctx.ENGINE_HEADLESS && ctx._windowContext) {

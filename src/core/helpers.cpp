@@ -2,13 +2,14 @@
 // Created by Dextron12 on 10/09/2025.
 //
 
-#include <core/helpers.h>
+#include <core/helpers.hpp>
 
-#include <glad/glad.h>
 #include <glm/vec4.hpp>
 
 #include <string>
 #include <iostream>
+
+#include <glad/glad.h>
 
 void clearScreen(float r, float g, float b, float a, GLbitfield buffer_mask) {
     float n_r = r / 255.0f;

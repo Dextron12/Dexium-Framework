@@ -2,11 +2,20 @@
 // Created by Dextron12 on 6/10/2025.
 //
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include <core/VFS.hpp>
 
 #include "core/AssetManager.hpp"
 #include "core/Error.hpp"
+#include "Dexium.hpp"
 
+#include <filesystem>
+
+std::filesystem::path Dexium::VFS::_execPath;
 
 void Dexium::VFS::init() {
 #ifdef _WIN32
@@ -19,6 +28,9 @@ void Dexium::VFS::init() {
 #ifdef DEXIUM_DEBUG
     _execPath = _execPath.parent_path(); // Moves another folder up
 #endif
+
+    //auto& ctx = EngineState::get();
+    //ctx.VFS_INIT = true;
 }
 
 std::unique_ptr<std::filesystem::path> Dexium::VFS::resolve(const std::string &relPath) {
@@ -35,7 +47,7 @@ std::unique_ptr<std::filesystem::path> Dexium::VFS::resolve(const std::string &r
         finalPath = std::filesystem::canonical(abs);
     }
     catch (const std::filesystem::filesystem_error& e) {
-        finalPath = abs.lexically_relative();
+        finalPath = abs.lexically_relative(abs);
     }
 
     // Validate path

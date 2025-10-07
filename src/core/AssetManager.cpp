@@ -70,7 +70,7 @@ void Dexium::AssetManager::registerAsset(const std::string& id, AssetType type, 
 	if (validate && fromFile) {
 		for (const std::string& file : paths){
 			if (!VFS::resolve(file)) {
-				TraceLog(LOG_ERROR, "Failed to resolve path: '%s' for asset: '%s'", file.c_str(), id.c_str());
+				TraceLog(LOG_ERROR, "Failed to resolve path: '{}' for asset: '{}'", file, id);
 				return;
 			}
 		}
@@ -79,7 +79,7 @@ void Dexium::AssetManager::registerAsset(const std::string& id, AssetType type, 
 	// Check if an entry already exists:
 	const auto& it = assets.find(id);
 	if (it != assets.end()) {
-		TraceLog(LOG_ERROR, "[Asset-Man]: Cannot re-register asset: '%s', it already is registered", id.c_str());
+		TraceLog(LOG_ERROR, "[Asset-Man]: Cannot re-register asset: '{}', it already is registered", id);
 		return;
 	}
 
@@ -137,11 +137,11 @@ void Dexium::AssetManager::unload(const std::string& id) {
 	//check if asset exists
 	const auto& it = assets.find(id);
 	if (it != assets.end()) {
-		TraceLog(LOG_INFO, "[Asset-Man]: Unloading Resource: '%s'", id.c_str());
+		TraceLog(LOG_INFO, "[Asset-Man]: Unloading Resource: '{}'", id);
 
 		//Check ptr' counts:
 		if (it->second.ptr.use_count() > 1) {
-			TraceLog(LOG_WARNING, "[Asset-Man]: Resource: '%s' still has '%d' references", id.c_str(), it->second.ptr.use_count());
+			TraceLog(LOG_WARNING, "[Asset-Man]: Resource: '{}' still has '{}' references", id, it->second.ptr.use_count());
 		}
 
 		assets.erase(it);

@@ -5,28 +5,48 @@
 #ifndef DEXIUM_ERROR_HPP
 #define DEXIUM_ERROR_HPP
 
+#pragma once
 #include <fmt/core.h>
 #include <fmt/color.h>
-
-
+#include <string>
 
 namespace Dexium {
 
     enum LogLevel {
-        LOG_TRACE = 1,      //< TRACE: debug or tracking messages
-        LOG_DEBUG = 2,      //< DEBUG: messages only output in debug mode
-        LOG_INFO = 3,       //< INFO: general engine state information
-        LOG_WARNING = 4,    //< WARNING: minor failure of engine, or incorrect usage of function/class
-        LOG_ERROR = 5,      //< ERROR: major failure, affected data likely lost(but engine/application can still operate without lost data)
-        LOG_FATAL = 6,      //< FATAL-ERROR: resource/state could not load, application will likely fail without this data (likely through a seg fault). In rel mode, will call abort() after dumping a logFile
-        LOG_NONE = 0        //< Disable/Enable all logging (engine-wide)
+        LOG_TRACE,
+        LOG_DEBUG,
+        LOG_INFO,
+        LOG_WARNING,
+        LOG_ERROR,
+        LOG_FATAL,
+        LOG_NONE
     };
 
-    template <typename... Args>
-    void TraceLog(LogLevel level, fmt::format_string<Args...> fmtStr, Args&&... args);
+    template<typename... Args>
+    void TraceLog(LogLevel level, fmt::format_string<Args...> fmtStr, Args&&... args) {
+        fmt::color col;
+        std::string prefix;
 
+        switch (level) {
+            case LOG_TRACE:   prefix = "[TRACE] ";   col = fmt::color::white; break;
+            case LOG_DEBUG:   prefix = "[DEBUG] ";   col = fmt::color::lime_green; break;
+            case LOG_INFO:    prefix = "[INFO] ";    col = fmt::color::white; break;
+            case LOG_WARNING: prefix = "[WARNING] "; col = fmt::color::yellow; break;
+            case LOG_ERROR:   prefix = "[ERROR] ";   col = fmt::color::red; break;
+            case LOG_FATAL:   prefix = "[FATAL] ";   col = fmt::color::purple; break;
+            case LOG_NONE:    return;
+        }
 
-}
+        // Option 1: Simple and safe
+        fmt::print(fmt::fg(col), "{}\n", fmt::format("{}{}", prefix, fmt::format(fmtStr, std::forward<Args>(args)...)));
+
+        // Option 2: Efficient (replace above line if you prefer)
+        // fmt::memory_buffer buf;
+        // fmt::format_to(buf, "{}{}", prefix, fmt::format(fmtStr, std::forward<Args>(args)...));
+        // fmt::print(fmt::fg(col), "{}\n", fmt::to_string(buf));
+    }
+
+} // namespace Dexium
 
 
 #endif //DEXIUM_ERROR_HPP

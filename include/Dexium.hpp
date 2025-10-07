@@ -7,19 +7,19 @@
 #define DEXIUM_HPP
 
 // -- INCLUDES FOR ENTIRE DEXIUM_LIB --
-#include <GLFW/glfw3.h>
+#include <core/WindowContext.hpp>
+//#include <GLFW/glfw3.h>
 // GLAD is included through WindowContext ( and initialised )
 #include <glm/glm.hpp>
 
 #include <memory>
-
-#include <core/WindowContext.hpp>
 
 #include "core/Error.hpp"
 #include "core/VFS.hpp"
 
 #include "core/Layers.hpp"
 #include "core/Sprite.hpp"
+#include "core/AssetManager.hpp"
 #include "core/Texture.hpp"
 #include "core/SpriteAnimations.hpp"
 
@@ -34,15 +34,9 @@ using Dexium::TraceLog;
 
 // using Sprite = Dexium::Sprite;
 using VFS = Dexium::VFS;
-
-
-// Macro definitions for Dexium
-// DEBUG Macro
-#if defined(_DEBUG) && !defined(NDEBUG)
-#define DEXIUM_DEBUG 1
-#else
-#define DEXIUM_DEBUG 0
-#endif
+using AssetManager = Dexium::AssetManager;
+using Sprite = Dexium::Sprite;
+using Spritesheet = Dexium::Spritesheet;
 
 
 // Meyers-Singelton
@@ -86,6 +80,7 @@ private:
     // Friend classes. Only engine sub-systems can modify engine state internals, they are a part of the engine
     friend class Dexium::WindowContext;
     friend class Dexium::Layer;
+    friend class Dexium::VFS;
 
     // Prevent copying
     EngineState(const EngineState&) = delete;

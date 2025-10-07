@@ -29,7 +29,7 @@ Dexium::Sprite::Sprite(const std::string& fileName) {
 			m_spriteID = fileName;
 		} else {
 			// File does not exist and no pre-registered asset
-			TraceLog(LOG_WARNING, "[Sprite]: No texture named: '%s' could be located", fileName.c_str());
+			TraceLog(LOG_WARNING, "[Sprite]: No texture named: {}' could be located", fileName);
 			return;
 		}
 	} else {
@@ -55,7 +55,7 @@ void Dexium::Sprite::setShader(const std::string& shaderID) {
 	if (AssetManager::getInstance().queryAsset(shaderID)) {
 		m_shaderID = shaderID;
 	} else {
-		TraceLog(LOG_WARNING, "[Spritesheet]: THe provided shader '%s' does not exist", shaderID.c_str());
+		TraceLog(LOG_WARNING, "[Spritesheet]: THe provided shader '{}' does not exist", shaderID);
 	}
 }
 
@@ -64,7 +64,7 @@ void Dexium::Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
 
 	auto shader = assets.use<Shader>(m_shaderID);
 	if (!shader) {
-		TraceLog(LOG_ERROR, "[Sprite]: Failed to fetch shader program: '%s'", m_shaderID.c_str());
+		TraceLog(LOG_ERROR, "[Sprite]: Failed to fetch shader program: '{}'", m_shaderID);
 		return;
 	}
 	shader->use(); // If same shader, GL ignores this state change
@@ -72,7 +72,7 @@ void Dexium::Sprite::drawSprite(const glm::vec4 pos, const glm::vec3 rot) {
 	// Get Texture2D
 	const auto& l_texture = assets.use<Texture2D>(m_spriteID);
 	if (!l_texture) {
-		TraceLog(LOG_ERROR, "[Sprite]: Could not fetch Texture2D: '%s'.", m_spriteID.c_str());
+		TraceLog(LOG_ERROR, "[Sprite]: Could not fetch Texture2D: '{}'.", m_spriteID);
 		return;
 	}
 	auto& l_transform = m_sprite->transform;
@@ -125,7 +125,7 @@ Dexium::Spritesheet::Spritesheet(const std::string &fileName) {
 			m_spriteID = fileName;
 		} else {
 			// No existign asset or configured path defined. Cannot proceed!
-			TraceLog(LOG_ERROR, "[Spritesheet]: Failed to register texture: '%s'. It cannot be located", fileName.c_str());
+			TraceLog(LOG_ERROR, "[Spritesheet]: Failed to register texture: '{}'. It cannot be located", fileName);
 			return;
 		}
 	} else {
@@ -152,7 +152,7 @@ Dexium::Spritesheet::~Spritesheet() {
 void Dexium::Spritesheet::setSprite(const std::string &spriteID, const glm::vec4 &spriteDim) {
 	auto it = m_frames.find(spriteID);
 	if (it != m_frames.end()) {
-		TraceLog(LOG_WARNING, "[Spritesheet]: The subSprite '%s' is already defined.", spriteID.c_str());
+		TraceLog(LOG_WARNING, "[Spritesheet]: The subSprite '{}' is already defined.", spriteID);
 		return;
 	}
 
@@ -163,7 +163,7 @@ void Dexium::Spritesheet::setSprite(const std::string &spriteID, const glm::vec4
 
 void Dexium::Spritesheet::remSprite(const std::string &spriteID) {
 	if (m_frames.erase(spriteID) == 0) {
-		TraceLog(LOG_WARNING, "[Spritesheet]: Redundant removal call of subSprite '%s'.", spriteID.c_str());
+		TraceLog(LOG_WARNING, "[Spritesheet]: Redundant removal call of subSprite '{}'.", spriteID);
 	}
 }
 
@@ -171,7 +171,7 @@ void Dexium::Spritesheet::setShader(const std::string &shaderID) {
 	if (AssetManager::getInstance().queryAsset(shaderID)) {
 		m_shaderID = shaderID;
 	} else {
-		TraceLog(LOG_WARNING, "[Spritesheet]: THe provided shader '%s' does not exist", shaderID.c_str());
+		TraceLog(LOG_WARNING, "[Spritesheet]: THe provided shader '{}' does not exist", shaderID);
 	}
 }
 
@@ -204,13 +204,13 @@ void Dexium::Spritesheet::drawSprite(const std::string &spriteID, const glm::vec
 
 	auto it = m_frames.find(spriteID);
 	if (it == m_frames.end()) {
-		TraceLog(LOG_WARNING, "[Spritesheet]: No Sprite '%s' exists.\nDid you forget to add one?" , spriteID.c_str());
+		TraceLog(LOG_WARNING, "[Spritesheet]: No Sprite '{}' exists.\nDid you forget to add one?" , spriteID);
 		return;
 	}
 
 	const auto& l_texture = assets.use<Texture2D>(m_spriteID);
 	if (!l_texture) {
-		TraceLog(LOG_ERROR, "[Spritesheet]: Could not fetch texture '%s'", m_spriteID.c_str());
+		TraceLog(LOG_ERROR, "[Spritesheet]: Could not fetch texture '{}'", m_spriteID);
 		return;
 	}
 

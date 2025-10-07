@@ -4,6 +4,7 @@
 
 #include "Dexium.hpp"
 #include "core/Error.hpp"
+#include "core/versionControl.hpp"
 
 //std::filesystem::path VFS::execPath;
 /* -- DEPREACTED --> Error.hpp has replaced this code
@@ -49,7 +50,6 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 		return;
 	}
 	glfwMakeContextCurrent(window);
-	TraceLog(LOG_TRACE, "[WindowContext]: Window created:\n%s", windowTitle.c_str());
 
 	if (!ctx.GLAD_INIT) {
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -60,11 +60,11 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 		// set EngineState GLAD INIT FLAG
 		ctx.GLAD_INIT = true;
 	}
-	TraceLog(LOG_TRACE, "[WindowContext]: GLAD loaded successfully");
+
 
 
 	// Configure GL viewport. For now, this is ok to do in WindowContext, but should eventually be made part of the renderer
-	glViewport(0, 0, windowWidth, windowHeight);
+	glViewport(0, 0, windowWidth, windowHeight); // MOVE TO CAMERA !!!!
 
 	glfwSetWindowUserPointer(window, this);
 
