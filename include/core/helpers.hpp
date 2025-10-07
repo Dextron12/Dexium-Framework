@@ -16,13 +16,5 @@
 // HELPFUL : Checks the GL state for any internal error messages and tries to give a less confusing error message!
 void checkGLErrors(const std::string& label = "");
 
-namespace Dexium::Helpers {
-    std::shared_ptr<Layer> CreateLayer(
-        const std::string& layerID,
-        std::function<void()> onInit = nullptr,
-        std::function<void()> onUpdate = nullptr,
-        std::function<void()> onRender = nullptr
-        );
-}
 
 #endif //DEXIUM_HELPERS_H

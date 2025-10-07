@@ -52,13 +52,3 @@ void checkGLErrors(const std::string& label) {
     }
 }
 
-std::shared_ptr<Dexium::Layer> Dexium::Helpers::CreateLayer(const std::string &layerID, std::function<void()> onInit, std::function<void()> onUpdate, std::function<void()> onRender) {
-    auto layer = std::make_shared<Dexium::Layer>(layerID);
-
-    layer->onInit = onInit;
-    layer->onUpdate = onUpdate;
-    layer->onRender = onRender;
-
-    return layer;
-}
-

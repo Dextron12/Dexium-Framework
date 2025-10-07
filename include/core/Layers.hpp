@@ -3,10 +3,54 @@
 #ifndef APPLICATION_LAYER
 #define APPLICATION_LAYER
 
+namespace Dexium {
 
-#include <core/WindowContext.hpp>
+    class AppState {
+    public:
+
+        // Make it non-copyable
+        AppState(const AppState&) = delete;
+        AppState& operator=(const AppState&) = delete;
+        AppState(AppState&&) = default;
+        AppState& operator=(AppState&&) = default;
+
+        virtual void onInit();
+        virtual void onUpdate();
+        virtual void onRender();
+        virtual void onShutdown(); // Engine calls this function when layer is being removed
+
+        virtual bool isOverlay() { return false; }
+
+        void run(); // WARNING: end-user is not to call this function! Engine internally calls it!
+
+        bool isActive() { return isRunning; }
+        bool isInitialized() { return isInited; }
+        bool isShuttingDown() { return isRunning && _isShutdown; }
+        bool isShutdown() {return _isShutdown;}
+
+        void RequestPause();
+        void RequestShutdown();
+
+    protected:
+        bool isInited = false; // Becomes true after onInit has been executed
+        bool isRunning = false; // If the layer is active
+        bool _isShutdown = false;
+
+        // Force heap-alloc (shared_ptr)
+        AppState() = default;
+        virtual ~AppState() = default;
+
+    };
 
 
+    class Overlay : public AppState {
+    public:
+        bool isOverlay() override { return true; };
+    };
+
+}
+
+/*
 namespace Dexium {
 
     // This is a pretty dodgy class, only create this class as a std::shared_ptr<Layer> or it WILL throw an exception!
@@ -32,4 +76,7 @@ namespace Dexium {
 
 
 }
+
+
+*/
 #endif // !- APPLICATION_LAYER

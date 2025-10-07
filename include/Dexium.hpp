@@ -13,11 +13,14 @@
 #include <glm/glm.hpp>
 
 #include <memory>
+#include <optional>
 
 #include "core/Error.hpp"
 #include "core/VFS.hpp"
 
 #include "core/Layers.hpp"
+#include "core/Signal.hpp"
+
 #include "core/Sprite.hpp"
 #include "core/AssetManager.hpp"
 #include "core/Texture.hpp"
@@ -37,6 +40,10 @@ using VFS = Dexium::VFS;
 using AssetManager = Dexium::AssetManager;
 using Sprite = Dexium::Sprite;
 using Spritesheet = Dexium::Spritesheet;
+
+using GameLayer = Dexium::AppState;
+using AppLayer = Dexium::AppState;
+using Overlay = Dexium::Overlay;
 
 
 // Meyers-Singelton
@@ -69,8 +76,30 @@ public:
     static float getDeltaTime();
 
     /* Layer management */
-    static void addLayer(std::shared_ptr<Dexium::Layer> layer);
-    static void Transtion2Layer(const std::string& ID, std::function<void()> transitionScript = nullptr);
+    static void addLayer(const std::string& layerID, std::shared_ptr<Dexium::AppState> layer);
+
+    // Allows end-users to directly create a layer from an object/ref
+    template<typename T>
+    static void addLayer(const std::string& layerID, T* layer) {
+        if (!layer) {
+            TraceLog(Dexium::LOG_ERROR, "Cannot add null layer '{}'", layerID);
+            return;
+        }
+
+        // Runtime check to make sure T is derived from AppState
+        if constexpr (!std::is_base_of<Dexium::AppState, T>::value) {
+            TraceLog(Dexium::LOG_ERROR, "Layer '{}' must derive from AppState", layerID);
+            return;
+        }
+
+        addLayer(layerID, std::shared_ptr<Dexium::AppState>(layer));
+    }
+
+    // Activates/deactivates a layer. Param 1 is for new layer, param 2 take optionals econd layer (parse std::nullopt, if you dont whish to pause prev layer), 3rd paam is to provide a custom transition script (executes before transition)
+    static void SwapLayer(const std::string& ID, std::optional<std::string> oldLayerID = std::nullopt, std::function<void()> transitionScript = nullptr);
+
+    //Engine-level Signals:
+    Signal<int, int> sig_windowResized;
 
 private:
     EngineState();
@@ -79,7 +108,7 @@ private:
 
     // Friend classes. Only engine sub-systems can modify engine state internals, they are a part of the engine
     friend class Dexium::WindowContext;
-    friend class Dexium::Layer;
+    friend class Dexium::AppState;
     friend class Dexium::VFS;
 
     // Prevent copying
@@ -105,8 +134,7 @@ private:
     glm::vec4 _scrCol = glm::vec4(0.0f);
 
     // Layer Configurations
-    std::unordered_map<std::string, std::shared_ptr<Dexium::Layer>> _layers;
-    std::shared_ptr<Dexium::Layer> _currentLayer = nullptr;
+    std::unordered_map<std::string, std::shared_ptr<Dexium::AppState>> _layers;
 
 
 

@@ -100,6 +100,9 @@ void Dexium::WindowContext::onResize(const int width, const int height) {
 		m_resizeCallback();
 	}
 
+	// Trigger Dexium sig_onResize
+	EngineState::get().sig_windowResized.emit(width, height);
+
 	TraceLog(LOG_DEBUG, "Window has been resized to [{}, {}]", width, height);
 }
 

@@ -5,6 +5,7 @@
 
 
 #include <Dexium.hpp>
+#include <optional>
 #include <nlohmann/detail/iterators/iteration_proxy.hpp>
 
 #include "core/Error.hpp"
@@ -105,11 +106,52 @@ void EngineState::run() {
         glClearColor(ctx._scrCol.x, ctx._scrCol.y, ctx._scrCol.z, ctx._scrCol.w);
         glClear(GL_COLOR_BUFFER_BIT); // Other buffers need to also be managed here
 
-        // execute currently bound layer
-        if (get()._currentLayer != nullptr) {
-            auto& layer = get()._currentLayer;
+        // execute layers
+        for (auto it = ctx._layers.begin(); it != ctx._layers.end(); ) {
+            auto& ptr = it->second;
+            //auto& name = it->first; // Not currently needed!
 
-            layer->run();
+            if (ptr->isActive() && !ptr->isOverlay()) {
+                // Execute regular layer
+                ptr->run();
+            }
+
+            // Check for shutdown requests
+            if (ptr->isShuttingDown()) {
+                // Stop running (pause it -> sets internal isRunning to false
+                // If isShutdown = true && isrunning == false, engine treats this as time to remove it from stack
+                ptr->RequestPause();
+            }
+            if (ptr->isShutdown()) {
+                ptr->onShutdown();
+                // Layer is ready for removal
+                it = ctx._layers.erase(it);
+                continue;
+            }
+
+            ++it; // Advance to next layer
+        }
+
+
+        // Now render overlays ontop of current layers
+        for (auto it = ctx._layers.begin(); it != ctx._layers.end(); ) {
+            auto& ptr = it->second;
+            //auto& name = it->first; // Again, not currently needed
+
+            if (ptr->isActive() && ptr->isOverlay()) {
+                ptr->run();
+            }
+
+            // Check for shutdown signal
+            if (ptr->isShuttingDown()) {
+                ptr->RequestPause();
+            }
+            if (ptr->isShutdown()) {
+                it = ctx._layers.erase(it);
+                continue;
+            }
+
+            ++it; // advance to next layer
         }
 
 
@@ -173,14 +215,23 @@ float EngineState::getDeltaTime() {
     return get()._deltaTime;
 }
 
-void EngineState::addLayer(std::shared_ptr<Dexium::Layer> layer) {
-    get()._layers[layer->ID] = layer;
+void EngineState::addLayer(const std::string& layerID, std::shared_ptr<Dexium::AppState> layer) {
+    //check if layerID already exists:
+    const auto& layers = get()._layers;
+    if (layers.find(layerID) == layers.end()) {
+        // No match, create new layer
+        get()._layers.emplace(layerID, layer);
+    } else {
+        TraceLog(Dexium::LOG_WARNING, "Cannot cerate new layer: {}, it already exists!", layerID);
+    }
 }
 
-void EngineState::Transtion2Layer(const std::string &ID, std::function<void()> transitionScript) {
+void EngineState::SwapLayer(const std::string &layerID, std::optional<std::string> oldLayerID, std::function<void()> transitionScript) {
     // First check if layer exists
-    if (get()._layers.find(ID) == get()._layers.end()) {
-        Dexium::TraceLog(Dexium::LOG_WARNING, "Cannot transtion to layer {} as it does not exist within the engine", ID);
+    const auto& layers = get()._layers;
+
+    if (layers.find(layerID) == layers.end()) {
+        TraceLog(Dexium::LOG_WARNING, "Cannot transition to layer {} as it does not exist within the engine", layerID);
         return;
     }
 
@@ -190,8 +241,16 @@ void EngineState::Transtion2Layer(const std::string &ID, std::function<void()> t
         transitionScript();
     }
 
+    if (oldLayerID.has_value()) {
+        auto extLayer = layers.find(oldLayerID.value());
+        if (extLayer != layers.end()) {
+            // Old layer exists, pause it.
+            extLayer->second->RequestPause();
+        }
+    }
+
     // Now change to new layer
-    get()._currentLayer = get()._layers[ID];
+   layers.find(layerID)->second->RequestPause(); // I know this sounds counter-intuitive -> to 'pause' when we are starting new layer. But requestPause() internally activates/pauses layer dependant on layer state
 }
 
 

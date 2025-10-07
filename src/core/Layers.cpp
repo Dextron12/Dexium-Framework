@@ -4,46 +4,31 @@
 
 #include <core/Layers.hpp>
 
-#include "Dexium.hpp"
-#include "core/Error.hpp"
 
-Dexium::Layer::Layer(std::string LayerID) {
-    auto& ctx = EngineState::get();
 
-    auto& layerRef = ctx._layers;
-    if (layerRef.find(LayerID) != layerRef.end()) {
-        // An existing layer fo the same ID was found. Reject new one
-        TraceLog(LOG_WARNING, "{} is already an existing layer. Cannot overwrite layer. Call shutdown() on {} first", LayerID);
-        return;
+void Dexium::AppState::run() {
+    if (!isInited) {
+        onInit();
+        isInited = true;
+        isRunning = true;
+    }
+    if (!isRunning) {
+        return; // layer is paused or inactive
     }
 
-    ID = LayerID;
+    onUpdate();
+    onRender();
 
 
 }
 
 
-
-void Dexium::Layer::run() {
-    if (!init) {
-        if (!onInit) {
-            TraceLog(LOG_WARNING, "No init function is bound for Layer: {}", ID);
-        } else {
-            // Call the init function
-                onInit();
-        }
-        init = true;
+void Dexium::AppState::RequestPause() {
+    if (!_isShutdown) {
+        isRunning = !isRunning;
     }
+}
 
-    if (!onUpdate) {
-        TraceLog(LOG_WARNING, "No OnUpdate bound to Layer: {}", ID);
-    } else {
-        onUpdate();
-    }
-
-    if (!onRender) {
-        //TraceLog(LOG_WARNING, "No OnRender() bound to Layer: {}", ID);
-    } else {
-        onRender();
-    }
+void Dexium::AppState::RequestShutdown() {
+    _isShutdown = true; // If engine detects this, it will *safely* remove the layer from the stack
 }
