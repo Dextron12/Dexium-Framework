@@ -32,19 +32,51 @@ EngineState &EngineState::get() {
 EngineState::EngineState() {
     // Eninge startup/initlisation here...
 
+    //Define engine-level signals here
+    auto& sm = Dexium::SignalManager::get();
+    sm.createSignal<bool>("GLFW_Init");
+    sm.createSignal<bool>("GLAD_Init");
+    sm.createSignal<bool>("VFS_Init");
+
+    //Listeners
+    sm.connect<bool>("GLFW_Init", [this](bool state) {
+        if (state) {
+            this->GLFW_INIT = true;
+            TraceLog(Dexium::LOG_INFO, "[Engine Startup]: GLFW successfully initialized");
+        } else {
+            this->GLFW_INIT = false;
+            const char* err; glfwGetError(&err);
+            if (err) {
+                TraceLog(Dexium::LOG_FATAL, "[Engine Startup]: GLFW failed to initialise. Reason: \n{}", err);
+            } else {
+                TraceLog(Dexium::LOG_FATAL, "[Engine Startup]: GLFW failed to initialize. Reason unknown");
+            }
+        }
+    });
+
+    sm.connect<bool>("GLAD_Init", [this](bool state) {
+        if (state) {
+            TraceLog(Dexium::LOG_INFO, "[Engine Startup]: GLAD successfully initialized");
+        } else {
+            TraceLog(Dexium::LOG_FATAL, "[Engine Startup]: GLAD failed to initialize");
+        }
+        this->GLAD_INIT = state;
+    });
+
+    sm.connect<bool>("VFS_Init", [this](bool state) {
+        if (state) {
+            TraceLog(Dexium::LOG_INFO, "[Engine Startup]: Application running from directory: {}", VFS::getExecutablePath().string());
+        } else {
+            TraceLog(Dexium::LOG_WARNING, "[Engine Startup]: Failed to establish working directory or init filesystem. relative paths may break");
+        }
+        this->VFS_INIT = state;
+    });
+
     //Init GLFW
     if (glfwInit() == GLFW_FALSE) {
-        const char* errorDesc;
-        int code = glfwGetError(&errorDesc);
-        if (code != GLFW_NO_ERROR){
-            Dexium::TraceLog(Dexium::LOG_FATAL,
-                "Failed to initiate core lib [GLFW]\nGLFW Error: [{}]:\nAborting program...",
-                code, errorDesc ? errorDesc : "Unknown Error");
-
-        }
-        this->GLFW_INIT = false;
+        sm.emit("GLFW_Init", false);
     } else {
-        this->GLFW_INIT = true;
+        sm.emit("GLFW_Init", true);
     }
 
 
@@ -62,7 +94,8 @@ EngineState::EngineState() {
     // Init VFS (Virtual File System). Will fetch the execPath
     VFS::init();
 
-    TraceLog(Dexium::LOG_INFO, "[Dexium-Core]: Core sub-systems initialized. Using Dexium: {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
+
+    TraceLog(Dexium::LOG_INFO, "[Dexium-Core]: Initialized. Using Dexium: {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
 
     appState = false; // remains false, until a WindowContext is created and succeeds
 }
@@ -223,6 +256,12 @@ void EngineState::addLayer(const std::string& layerID, std::shared_ptr<Dexium::A
         get()._layers.emplace(layerID, layer);
     } else {
         TraceLog(Dexium::LOG_WARNING, "Cannot cerate new layer: {}, it already exists!", layerID);
+    }
+
+    //Check if ONLy one layer(if so, make it the active layer)(So end-user doesn';t have to manually activate it!)
+    if (get()._layers.size() == 1) {
+        //One layer exists (the newly created layer)
+        SwapLayer(layerID);
     }
 }
 

@@ -14,10 +14,10 @@ namespace Dexium {
         AppState(AppState&&) = default;
         AppState& operator=(AppState&&) = default;
 
-        virtual void onInit();
-        virtual void onUpdate();
-        virtual void onRender();
-        virtual void onShutdown(); // Engine calls this function when layer is being removed
+        virtual void onInit() = 0;
+        virtual void onUpdate() = 0;
+        virtual void onRender() = 0;
+        virtual void onShutdown() = 0; // Engine calls this function when layer is being removed
 
         virtual bool isOverlay() { return false; }
 

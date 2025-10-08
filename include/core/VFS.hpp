@@ -14,7 +14,6 @@
 #ifndef DEXIUM_VFS_HPP
 #define DEXIUM_VFS_HPP
 
-
 #include <memory>
 #include <string>
 #include <filesystem>
@@ -34,6 +33,7 @@ namespace Dexium {
         static std::filesystem::path getExecutablePath();
 
     private:
+
         static std::filesystem::path _execPath;
     };
 

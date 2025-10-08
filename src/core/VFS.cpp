@@ -11,7 +11,7 @@
 
 #include "core/AssetManager.hpp"
 #include "core/Error.hpp"
-#include "Dexium.hpp"
+#include "core/Signal.hpp"
 
 #include <filesystem>
 
@@ -29,8 +29,11 @@ void Dexium::VFS::init() {
     _execPath = _execPath.parent_path(); // Moves another folder up
 #endif
 
-    //auto& ctx = EngineState::get();
-    //ctx.VFS_INIT = true;
+    if (!_execPath.empty()) {
+        SignalManager::get().emit("VFS_Init", true);
+    } else {
+        SignalManager::get().emit("VFS_Init", false);
+    }
 }
 
 std::unique_ptr<std::filesystem::path> Dexium::VFS::resolve(const std::string &relPath) {

@@ -53,8 +53,10 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 
 	if (!ctx.GLAD_INIT) {
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			TraceLog(LOG_FATAL, "Failed to intiate GLAD");
+			SignalManager::get().emit("GLAD_Init", false);
 			return;
+		} else {
+			SignalManager::get().emit("GLAD_Init", true);
 		}
 
 		// set EngineState GLAD INIT FLAG
@@ -76,8 +78,6 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 	);
 
 	width = windowWidth; height = windowHeight;
-
-	TraceLog(LOG_INFO, "[WindowContext]: Dexium-Window initiated. Using Dexium {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
 
 	// initialisation complete, now enable appState
 	ctx.appState = true;
@@ -103,7 +103,6 @@ void Dexium::WindowContext::onResize(const int width, const int height) {
 	// Trigger Dexium sig_onResize
 	EngineState::get().sig_windowResized.emit(width, height);
 
-	TraceLog(LOG_DEBUG, "Window has been resized to [{}, {}]", width, height);
 }
 
 void Dexium::WindowContext::SetWindowResizeCallback(std::function<void()> callback) {

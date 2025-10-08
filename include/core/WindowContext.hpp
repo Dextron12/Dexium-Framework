@@ -12,9 +12,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
 #include <filesystem>
-//#include <cstdarg> // For va_list & va_start // deprecated
 #include <functional>
 
 

@@ -16,7 +16,6 @@
 #include <optional>
 
 #include "core/Error.hpp"
-#include "core/VFS.hpp"
 
 #include "core/Layers.hpp"
 #include "core/Signal.hpp"
@@ -25,7 +24,7 @@
 #include "core/AssetManager.hpp"
 #include "core/Texture.hpp"
 #include "core/SpriteAnimations.hpp"
-
+#include "core/VFS.hpp"
 
 
 #include "fmt/color.h"
@@ -37,6 +36,7 @@ using Dexium::TraceLog;
 
 // using Sprite = Dexium::Sprite;
 using VFS = Dexium::VFS;
+
 using AssetManager = Dexium::AssetManager;
 using Sprite = Dexium::Sprite;
 using Spritesheet = Dexium::Spritesheet;
@@ -92,15 +92,20 @@ public:
             return;
         }
 
-        addLayer(layerID, std::shared_ptr<Dexium::AppState>(layer));
+        addLayer(layerID, std::shared_ptr<T>(layer));
+    }
+
+    template<typename T>
+    static void addLayer(const std::string& layerID, std::shared_ptr<T> layer) {
+        static_assert(std::is_base_of<Dexium::AppState, T>::value, "Layer must derive from AppState");
+        addLayer(layerID, std::static_pointer_cast<Dexium::AppState>(layer));
     }
 
     // Activates/deactivates a layer. Param 1 is for new layer, param 2 take optionals econd layer (parse std::nullopt, if you dont whish to pause prev layer), 3rd paam is to provide a custom transition script (executes before transition)
     static void SwapLayer(const std::string& ID, std::optional<std::string> oldLayerID = std::nullopt, std::function<void()> transitionScript = nullptr);
 
-    //Engine-level Signals:
-    Signal<int, int> sig_windowResized;
-
+    //User-level Signals: (user can add listener to handle event)
+    Signal<int, int> sig_windowResized; // Triggered when window attached to WindowContext resizes
 private:
     EngineState();
 
@@ -108,8 +113,7 @@ private:
 
     // Friend classes. Only engine sub-systems can modify engine state internals, they are a part of the engine
     friend class Dexium::WindowContext;
-    friend class Dexium::AppState;
-    friend class Dexium::VFS;
+    //friend class Dexium::AppState; // AppState needs to trust EngineState
 
     // Prevent copying
     EngineState(const EngineState&) = delete;
