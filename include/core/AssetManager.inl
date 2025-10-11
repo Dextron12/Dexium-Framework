@@ -38,10 +38,12 @@ namespace Dexium {
 	 */
 
 	template <typename T>
-	void AssetManager::registerAsset(const std::string& id, T&& asset, std::function<bool(const T&)> validator) {
-		constexpr AssetType type = AssetTraits<T>::type;
+	void AssetManager::registerAsset(const std::string& id, T&& asset, std::function<bool(const std::decay_t<T>&)> validator) {
+		//constexpr AssetType type = AssetTraits<T>::type;
+		using CleanT = std::decay_t<T>;
+		constexpr AssetType type = AssetTraits<CleanT>::type;
 
-		if (validator && !validator(asset)) {
+		if (validator && !validator(static_cast<const CleanT&>(asset))) {
 			TraceLog(LOG_ERROR, "[Asset-Registrar]: Validation for '%s' failed. Check output logs", id.c_str());
 			return;
 		}
@@ -55,7 +57,9 @@ namespace Dexium {
 
 		AssetEntry entry;
 		entry.type = type;
-		entry.ptr = std::make_shared<T>(std::move(asset));
+
+		//Store as a shared_ptr,CleanT>! to prevent lValue & rValue type mismatches
+		entry.ptr = std::make_shared<CleanT>(std::forward<T>(asset));
 		assets[id] = entry; // Create new entry
 	}
 
