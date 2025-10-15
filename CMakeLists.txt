@@ -37,7 +37,7 @@ target_link_libraries(Dexium
 PUBLIC glfw
 PUBLIC glad::glad
 PUBLIC glm::glm
-PUBLIC fmt::fmt
+PUBLIC fmt_vendor		# VENDORED COPY!!
 )
 
 # ====== DEFINE MACROS FOR DEBUG/RELEASE =======

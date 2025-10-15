@@ -1,7 +1,3 @@
-module;
-
-#define FMT_MODULE
-
 #ifdef _MSVC_LANG
 #  define FMT_CPLUSPLUS _MSVC_LANG
 #else
@@ -91,15 +87,10 @@ module;
 #  include <windows.h>
 #endif
 
-export module fmt;
-
 #ifdef FMT_IMPORT_STD
 import std;
 #endif
 
-#define FMT_EXPORT export
-#define FMT_BEGIN_EXPORT export {
-#define FMT_END_EXPORT }
 
 // If you define FMT_ATTACH_TO_GLOBAL_MODULE
 //  - all declarations are detached from module 'fmt'
@@ -136,7 +127,6 @@ extern "C++" {
 
 // gcc doesn't yet implement private module fragments
 #if !FMT_GCC_VERSION
-module :private;
 #endif
 
 #ifdef FMT_ATTACH_TO_GLOBAL_MODULE
