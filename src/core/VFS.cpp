@@ -43,23 +43,17 @@ std::unique_ptr<std::filesystem::path> Dexium::VFS::resolve(const std::string &r
     }
 
     std::filesystem::path rel(relPath);
-    std::filesystem::path abs = _execPath / rel;
+    std::filesystem::path abs = (_execPath / rel).lexically_normal();
 
-    std::filesystem::path finalPath;
-    try {
-        finalPath = std::filesystem::canonical(abs);
-    }
-    catch (const std::filesystem::filesystem_error& e) {
-        finalPath = abs.lexically_relative(abs);
+    //Validate path:
+    if (exists(abs)) {
+        return std::make_unique<std::filesystem::path>(abs);
     }
 
-    // Validate path
-    if (std::filesystem::exists(finalPath)) {
-        return std::make_unique<std::filesystem::path>(finalPath);
-    } else {
-        TraceLog(LOG_WARNING, "[VFS::Resolve]: Failed to resolve path {}", relPath);
-        return nullptr;
-    }
+    //Otherwsie, warn of failed path and return nullptr
+    TraceLog(LOG_WARNING, "[VFS::Resolve]: resolved path '{}' does not exist", abs.string());
+    return nullptr;
+
 }
 
 bool Dexium::VFS::exists(const std::filesystem::path &path) {
