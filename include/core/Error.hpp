@@ -4,8 +4,6 @@
 
 #ifndef DEXIUM_ERROR_HPP
 #define DEXIUM_ERROR_HPP
-
-#pragma once
 #include <fmt/core.h>
 #include <fmt/color.h>
 #include <string>

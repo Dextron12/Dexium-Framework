@@ -64,6 +64,7 @@ public:
     static void attachWindow(const std::string& windowTitle, const int windowWidth, const int windowHeight);
     static void detachWindow(); // Frees the WindowContext bound to the active EngineState
     static Dexium::WindowContext* getWindow();
+    static glm::vec2 getWindowSize();
 
     // Takes a vec4{} and stores it to be used as the bgColor when EngineState::run() is called
     static void setBgColor(const glm::vec4& color);
@@ -144,6 +145,7 @@ private:
 
 
 };
+
 
 #endif
 

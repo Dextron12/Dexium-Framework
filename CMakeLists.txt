@@ -50,15 +50,18 @@ PUBLIC fmt_vendor
 
 # --- Link OpenAL (if enabled) ---
 if (DEXIUM_USE_AUDIO)
+    set(MINIAUDIO_DIR "${CMAKE_SOURCE_DIR}/third_party/miniaudio")
     set(OPENAL_DIR "${CMAKE_SOURCE_DIR}/third_party/openal-soft")
 
     target_include_directories(Dexium PUBLIC
             "${OPENAL_DIR}/include"
+            "${MINIAUDIO_DIR}"
     )
 
     # Correct library directory
     target_link_directories(Dexium PRIVATE
             "${OPENAL_DIR}/libs/Win64/"
+            "{MINIAUDIO_DIR}"
     )
 
     target_link_libraries(Dexium PRIVATE ${OPENAL_DIR}/libs/Win64/libOpenAL32.dll.a)

@@ -17,4 +17,16 @@
 void checkGLErrors(const std::string& label = "");
 
 
+namespace Dexium {
+
+    namespace Utilities {
+        // Registers a fallback texture (pink & black checkerboard) to the AssetManager as '__fallbackTexture'
+        void registerFallbackTexture(int rows, int cols, int cellSize = 8, std::string_view assetID = "__fallbackTexture");
+
+        // Registers the default 1x1 white texture required for all rendering
+        void registerWhiteTexture();
+    }
+}
+
+
 #endif //DEXIUM_HELPERS_H

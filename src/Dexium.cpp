@@ -217,6 +217,14 @@ Dexium::WindowContext* EngineState::getWindow() {
     return ctx._windowContext ? ctx._windowContext.get() : nullptr;
 }
 
+glm::vec2 EngineState::getWindowSize() {
+    auto& ctx = get();
+    if (!ctx._windowContext) {
+        TraceLog(Dexium::LOG_WARNING, "Cannot access a windowContext, none is bound to the engine!");
+    }
+    return glm::vec2(ctx._windowContext->width, ctx._windowContext->height);
+}
+
 
 void EngineState::setBgColor(const glm::vec4 &color) {
     //convert FMT colour to vec colour
@@ -291,8 +299,6 @@ void EngineState::SwapLayer(const std::string &layerID, std::optional<std::strin
     // Now change to new layer
    layers.find(layerID)->second->RequestPause(); // I know this sounds counter-intuitive -> to 'pause' when we are starting new layer. But requestPause() internally activates/pauses layer dependant on layer state
 }
-
-
 
 
 
