@@ -64,6 +64,19 @@ bool Dexium::VFS::exists(const std::string &path) {
     return std::filesystem::exists(path);
 }
 
+void Dexium::VFS::overwriteExecutablePath(std::string_view newPath) {
+    std::filesystem::path npath = newPath;
+
+    //Validate it
+    if (std::filesystem::exists(npath) && std::filesystem::is_directory(npath)) {
+        _execPath = npath;
+        TraceLog(LOG_INFO, "Updated the working directory to: '{}'", npath.string());
+    } else {
+        TraceLog(LOG_ERROR, "[VFS]: Cannot change working dir to '{}', it does not meet the expectations of a working directory", npath.string());
+    }
+}
+
+
 std::filesystem::path Dexium::VFS::getExecutablePath() {
     return _execPath;
 }
