@@ -4,7 +4,7 @@
 /Tests/*
 /Tests/Assets/*
 /src/main.cpp
-Textures/*
+Resources/*
 *.o
 *.obj
 *.so
@@ -31,3 +31,4 @@ Snapshots/
 
 # Doxygen files
 docs/build/*
+docs/*

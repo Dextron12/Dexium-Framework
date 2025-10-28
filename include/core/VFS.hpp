@@ -30,7 +30,10 @@ namespace Dexium {
         static bool exists (const std::string& path);
         static bool exists(const std::filesystem::path& path);
 
-        static std::filesystem::path getExecutablePath();
+        static std::filesystem::path getExecutablePath();\
+
+        // WARNING: A call to this function overwrites the engines default working path(Usually the parent folder of your exec)
+        static void overwriteExecutablePath(std::string_view newPath);
 
     private:
 

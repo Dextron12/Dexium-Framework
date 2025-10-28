@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS off)
 
 # --- Global options ---
-option(DEXIUM_USE_AUDIO "Enable OpenAL support" ON)
+option(DEXIUM_USE_AUDIO "Enable Audio support" ON)
 
 # --- Add main Dexium target ---
 file(GLOB_RECURSE DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
@@ -51,28 +51,17 @@ PUBLIC fmt_vendor
 # --- Link OpenAL (if enabled) ---
 if (DEXIUM_USE_AUDIO)
     set(MINIAUDIO_DIR "${CMAKE_SOURCE_DIR}/third_party/miniaudio")
-    set(OPENAL_DIR "${CMAKE_SOURCE_DIR}/third_party/openal-soft")
+
+    # OpenAl-Soft has been removed as a audio dependency. It's a horrible library and if I were the maintainer's I'd curl up into a ball until the world vanishes
 
     target_include_directories(Dexium PUBLIC
-            "${OPENAL_DIR}/include"
             "${MINIAUDIO_DIR}"
     )
 
     # Correct library directory
     target_link_directories(Dexium PRIVATE
-            "${OPENAL_DIR}/libs/Win64/"
             "{MINIAUDIO_DIR}"
     )
-
-    target_link_libraries(Dexium PRIVATE ${OPENAL_DIR}/libs/Win64/libOpenAL32.dll.a)
-
-    if (WIN32)
-        add_custom_command(TARGET Dexium POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${OPENAL_DIR}/bin/Win64/OpenAL32.dll"
-                "$<TARGET_FILE_DIR:Dexium>"
-        )
-    endif()
 endif()
 
 
