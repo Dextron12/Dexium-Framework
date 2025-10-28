@@ -15,6 +15,7 @@
 #include <memory>
 #include <optional>
 
+#include "imgui.h"
 #include "core/Error.hpp"
 
 #include "core/Layers.hpp"
@@ -102,6 +103,13 @@ public:
         addLayer(layerID, std::static_pointer_cast<Dexium::AppState>(layer));
     }
 
+    // Optional Package: Dear ImGui (Init function)
+#ifdef DEXIUM_USING_ImGui
+    static void InitImGui();
+
+#endif
+
+
     // Activates/deactivates a layer. Param 1 is for new layer, param 2 take optionals econd layer (parse std::nullopt, if you dont whish to pause prev layer), 3rd paam is to provide a custom transition script (executes before transition)
     static void SwapLayer(const std::string& ID, std::optional<std::string> oldLayerID = std::nullopt, std::function<void()> transitionScript = nullptr);
 
@@ -140,6 +148,19 @@ private:
 
     // Layer Configurations
     std::unordered_map<std::string, std::shared_ptr<Dexium::AppState>> _layers;
+
+    // Optional ImGui Integration + Viewport/Docking vars
+#ifdef DEXIUM_USING_ImGui
+
+    ImGuiIO* io = nullptr;
+    ImGuiID dockspace_id{};
+    ImGuiViewport* viewport{nullptr};
+    ImGuiWindowFlags window_flags{0}; // Used to make the main viewport transparent and non-interactive (essentially invisible)
+    bool ImGui_Inited; // Used to ensure that ImGui is properly configured
+    // The need for this setup is because the docking branch requires a viewport. Creating a viewport requies access to the Window context...
+    // which cannot be accessed from inside EngineState initializer as this creates an infinite initialisation loop.
+    // Also, the WindowContext object isnt initaited until the end of the EngineState ahs initialised(When AttachWindow is called)
+#endif
 
 
 

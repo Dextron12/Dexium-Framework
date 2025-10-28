@@ -4,6 +4,7 @@
 
 #include "Dexium.hpp"
 #include "core/Error.hpp"
+#include "core/helpers.hpp"
 #include "core/versionControl.hpp"
 
 //std::filesystem::path VFS::execPath;
@@ -81,6 +82,9 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 
 	// initialisation complete, now enable appState
 	ctx.appState = true;
+
+	// Register the default white texture (pipeline texture)
+	Dexium::Utilities::registerWhiteTexture(); // Does this belong here? No, but it works!
 
 }
 

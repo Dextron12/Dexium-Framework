@@ -9,8 +9,15 @@
 #include <nlohmann/detail/iterators/iteration_proxy.hpp>
 
 #include "core/Error.hpp"
+#include "core/helpers.hpp"
 #include "core/WindowContext.hpp"
 #include "core/versionControl.hpp"
+
+#ifdef DEXIUM_USING_ImGui
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#endif
 
 void EngineState::init() {
     get(); // Forces init
@@ -20,8 +27,18 @@ void EngineState::shutdown() {
     // Shutdown code here
     auto& engine = get();
 
-
     engine.appState = false;
+
+    // Optional Package: dear ImGui (Shutdown ImGui)
+#ifdef DEXIUM_USING_ImGui
+    if (engine.ImGui_Inited) {
+        //ImGui_ImplOpenGL3_Shutdown();
+        //ImGui_ImplGlfw_Shutdown();
+        //ImGui::DestroyContext();
+
+        // Something else is destroying the ImGui context before this code is reached? Above code results in Segfault.
+    }
+#endif
 }
 
 EngineState &EngineState::get() {
@@ -94,6 +111,15 @@ EngineState::EngineState() {
     // Init VFS (Virtual File System). Will fetch the execPath
     VFS::init();
 
+    // Optional Package: ImGui
+#ifdef DEXIUM_USING_ImGui
+    ImGui_Inited = false;
+#endif
+
+    // Register AssetManager Default Loaders
+    AssetManager::getInstance().registerDefaultLoaders();
+    TraceLog(Dexium::LOG_INFO, "[Engine Startup]: Default Loaders for AssetManager have been registered");
+
 
     TraceLog(Dexium::LOG_INFO, "[Dexium-Core]: Initialized. Using Dexium: {}.{}.{}", Dexium::VERSION::major, Dexium::VERSION::minor, Dexium::VERSION::patch);
 
@@ -103,6 +129,50 @@ EngineState::EngineState() {
 EngineState::~EngineState() {
 
 }
+
+void EngineState::InitImGui() {
+    // OPTIONAL PACKAGE: Dear ImGui
+#ifdef DEXIUM_USING_ImGui
+    // Get EngineState context
+    auto& ctx = EngineState::get();
+    //Check if already initalised
+    if (ctx.ImGui_Inited) return; // Early exit, if already inialised
+    //Check for a valid WindowContext
+    if (ctx._windowContext->window == nullptr) {
+        TraceLog(Dexium::LOG_ERROR, "[ImGui Initt]: Cannot init ImGui package without a valid WindowContext");
+        return;
+    }
+    // Create ImGui Context
+    ImGui::CreateContext();
+    ctx.io = &ImGui::GetIO();
+    ctx.io->ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable; // Enable ImGui docking and viewports
+
+    // Init ImGui for platform/renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(ctx._windowContext->window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core"); // Initialise ImGui to use OpenGL 3.3 core!!
+
+    // Configure main viewport 9Due to the nature of this viewport, docking external windows onto it isn't available. You'd need to...
+    // create your own viewport/dockspace to dock a window onto(and provide docking options)
+    auto& viewport = ctx.viewport;
+    viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    // Configure the viewport flags so that the engine rendeer is visible and input is passed through
+    ctx.window_flags |= ImGuiWindowFlags_NoTitleBar
+    | ImGuiWindowFlags_NoCollapse
+    | ImGuiWindowFlags_NoResize
+    | ImGuiWindowFlags_NoMove
+    | ImGuiWindowFlags_NoBringToFrontOnFocus
+    | ImGuiWindowFlags_NoNavFocus
+    | ImGuiWindowFlags_NoBackground;
+
+    TraceLog(Dexium::LOG_INFO, "[Engine Startup]: Dear ImGui initialized. Version: {}", ImGui::GetVersion());
+    ctx.ImGui_Inited = true;
+#endif
+}
+
 
 
 void EngineState::run() {
@@ -122,6 +192,12 @@ void EngineState::run() {
         TraceLog(Dexium::LOG_ERROR, "No WindowContext is bound to the engine\nApplication cannot run without a windowContext");
     }
 
+    // Optional Package: Dear ImGui (Lazy init ImGui)
+    // Again, this is done because a valid WindowCOntext isnt available during EngineState init
+#ifdef DEXIUM_USING_ImGui
+    InitImGui();
+#endif
+
     while (ctx.appState) {
         if (!ctx.ENGINE_HEADLESS && ctx._windowContext) {
             // Running with a valid WindwoContext. Update frame
@@ -133,6 +209,21 @@ void EngineState::run() {
         std::chrono::duration<float> elapsed = now - ctx._lastFrameTime;
         ctx._deltaTime = elapsed.count(); // convert to float seconds
         ctx._lastFrameTime = now;
+
+        // Optional Package: Dear ImGui (Rendering)
+        // Start a ImGui NewFrame here and end + render after layers have been drawn
+#ifdef DEXIUM_USING_ImGui
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Force dockspace (This in part allows floating/OS level windows)
+        ImGui::Begin("MainDockspace", nullptr, ctx.window_flags);
+        ImGui::DockSpace(ImGui::GetID("MainDockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::End();
+
+
+#endif
 
 
         // Clear screen from prev frame
@@ -187,6 +278,22 @@ void EngineState::run() {
             ++it; // advance to next layer
         }
 
+
+        //Optional Package: Dear ImGui (Render state)
+#ifdef DEXIUM_USING_ImGui
+        // Render ImGuia fter everything else
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // update and render viewports(Allows OS level windows, especially on Windows platform)
+        if (ctx.io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            GLFWwindow* backup_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_context);
+        }
+
+#endif
 
         // end frame
         if (!ctx.ENGINE_HEADLESS && ctx._windowContext) {

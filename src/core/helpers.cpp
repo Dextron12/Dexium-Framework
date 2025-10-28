@@ -72,6 +72,10 @@ void Dexium::Utilities::registerWhiteTexture() {
 
     glBindTexture(GL_TEXTURE_2D, 0); // uNBIND THE CURRENT TEXTURE TO PREVENT MODIFICATION
 
+    // This SHOULD be FIXED!!!
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     //register texture
     auto& assets = AssetManager::getInstance();
     assets.registerAsset("__whiteTexture", tex);

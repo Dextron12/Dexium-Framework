@@ -32,3 +32,6 @@ Snapshots/
 # Doxygen files
 docs/build/*
 docs/*
+
+# External Libs
+third_party/imgui

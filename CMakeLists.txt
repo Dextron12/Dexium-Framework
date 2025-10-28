@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS off)
 
 # --- Global options ---
 option(DEXIUM_USE_AUDIO "Enable Audio support" ON)
+option(DEXIUM_USE_ImGui "Enable Dear ImGui integration" ON)
 
 # --- Add main Dexium target ---
 file(GLOB_RECURSE DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
@@ -62,6 +63,30 @@ if (DEXIUM_USE_AUDIO)
     target_link_directories(Dexium PRIVATE
             "{MINIAUDIO_DIR}"
     )
+
+    target_compile_definitions(Dexium PUBLIC DEXIUM_USING_AUDIO)
+endif()
+
+# --- Link Dear ImGui (if enabled) ---
+if (DEXIUM_USE_ImGui)
+    SET(IMGUI_DIR "${CMAKE_SOURCE_DIR}/third_party/imgui")
+
+    target_include_directories(Dexium PUBLIC
+        "${IMGUI_DIR}"
+        "${IMGUI_DIR}/backends"
+    )
+
+    target_sources(Dexium PRIVATE
+    "${IMGUI_DIR}/imgui.cpp"
+    "${IMGUI_DIR}/imgui_draw.cpp"
+    "${IMGUI_DIR}/imgui_tables.cpp"
+    "${IMGUI_DIR}/imgui_widgets.cpp"
+    "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+    "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+    )
+
+    # Allows to check for 'DEXIUM_USING_ImGui' in src code
+    target_compile_definitions(Dexium PUBLIC DEXIUM_USING_ImGui)
 endif()
 
 
