@@ -8,8 +8,16 @@
 namespace Dexium::VERSION {
     inline int major = 0;
     inline int minor = 16;
-    inline int patch = 1;
+    inline int patch = 2;
 }
+
+// CHANGELOG: v0.16.2-A
+/*
+ * Added a ID16 class. A binary storage class for storing 16 chars as an ID and allows for easy comparision
+    that is faster than string comparison.
+ * Added a UUID V4(random generation) class into the repo
+ * Integrated the UUIdv4 and ID16 into a integrated ID class, which will be used for assetID's moving forward
+ */
 
 // CHANGELOG: v0.16.1-A
 /*
