@@ -11,6 +11,10 @@
 
 #include "core/helpers.hpp"
 
+const std::array<uint8_t, 16>& Dexium::Utils::ID16::getBytes() const {
+    return bytes;
+}
+
 Dexium::Utils::ID16::ID16(const std::string &strID) {
     if (strID.empty() || strID.size() > 16) {
         TraceLog(LOG_WARNING, "[ID]: The ID is of size {}. Cannot be empty or greater than 16 chars", strID.size());
@@ -146,6 +150,25 @@ std::string Dexium::Utils::ID::hash(){
     }
 
     return storage.uuidValue.String();
+}
+
+std::size_t Dexium::Utils::ID::numericHash() const {
+    if (type == IDType::ID16) {
+        // Convert data into numeric form
+        std::size_t h = 0;
+        for (auto b : storage.id16.getBytes()) {
+            h = (h * 31) + b; // a simple rolling hash
+        }
+        return h;
+    } else {
+        // UUID
+        std::size_t h = 0;
+        for (auto s : storage.uuidValue.String()) {
+            h = (h * 31) + static_cast<uint8_t>(s);
+        }
+        return h;
+
+    }
 }
 
 

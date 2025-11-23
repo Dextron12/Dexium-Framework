@@ -26,6 +26,8 @@ namespace Dexium::Utils {
         //Displays the internal binary format in a hex style string (ASCII char + padding)
         std::string hexID() const;
 
+        const std::array<uint8_t, 16>& getBytes() const;
+
         bool operator==(const ID16& other) const;
         bool operator!=(const ID16& other) const;
 
@@ -78,6 +80,22 @@ namespace Dexium::Utils {
                           _data[6], _data[7],
                           _data[8], _data[9],
                           _data[10], _data[11], _data[12], _data[13], _data[14], _data[15]);
+
+            std::string uuid = buffer;
+
+            return uuid;
+        }
+
+        std::string String() const {
+            // Formats to "0065e7d7-418c-4da4-b4d6-b54b6cf7466a"
+            char buffer[256] = {0};
+            std::snprintf(buffer, 255,
+              "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+              _data[0], _data[1], _data[2], _data[3],
+              _data[4], _data[5],
+              _data[6], _data[7],
+              _data[8], _data[9],
+              _data[10], _data[11], _data[12], _data[13], _data[14], _data[15]);
 
             std::string uuid = buffer;
 
@@ -144,6 +162,8 @@ namespace Dexium::Utils {
         // If type = ID16 -> ASCII (int) values + '0' padding(Hash-Lite). If type = UUID -> returns hashed UUID
         std::string hash();
 
+        std::size_t numericHash() const;
+
     private:
         IDStore storage; // a union var that stores a UUID adn ID16. --> Faster than std::variant
         IDType type;
@@ -158,5 +178,14 @@ namespace Dexium::Utils {
 
 
 };
+
+namespace std {
+    template <>
+    struct hash<Dexium::Utils::ID> {
+        std::size_t operator()(const Dexium::Utils::ID& id) const noexcept {
+            return id.numericHash();
+        }
+    };
+}
 
 #endif //DEXIUM_ID_HPP
