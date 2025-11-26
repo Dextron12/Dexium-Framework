@@ -2,7 +2,7 @@
 #include <core/Shader.hpp>
 #include <core/Error.hpp>
 
-#include <glad/glad.h>
+#include <gl.h> // GLAD2 used from vendored copy
 
 #include <fstream>
 #include <sstream>

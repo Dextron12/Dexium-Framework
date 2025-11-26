@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-#include <glad/glad.h>
+#include <gl.h> // GLAD2 (vendored)
 
 #include "core/Texture.hpp"
 #include "fmt/compile.h"
@@ -41,10 +41,6 @@ void checkGLErrors(const std::string& label) {
                 std::cerr << ": GL_INVALID_VALUE\n"; break;
             case GL_INVALID_OPERATION:
                 std::cerr << ": GL_INVALID_OPERATION\n"; break;
-            case GL_STACK_OVERFLOW:
-                std::cerr << ": GL_STACK_OVERFLOW\n"; break;
-            case GL_STACK_UNDERFLOW:
-                std::cerr << ": GL_STACK_UNDERFLOW\n"; break;
             case GL_OUT_OF_MEMORY:
                 std::cerr << ": GL_OUT_OF_MEMORY\n"; break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:

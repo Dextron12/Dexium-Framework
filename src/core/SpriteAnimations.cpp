@@ -5,6 +5,8 @@
 #include <core/SpriteAnimations.hpp>
 #include <core/Error.hpp>
 
+#include <algorithm> // used for std::find_if
+
 #ifdef DEXIUM_HAS_NLOHMANN_JSON
 #include <nlohmann/json.hpp>
 #include <core/versionControl.hpp> // Contains engine_core versioning & core configurations

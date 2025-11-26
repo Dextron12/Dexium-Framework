@@ -4,7 +4,8 @@
 #include <core/Error.hpp>
 
 #include <string>
-#include <memory>
+
+#include <gl.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

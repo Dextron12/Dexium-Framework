@@ -4,6 +4,8 @@
 
 #include <core/Mesh.hpp>
 
+#include <gl.h> // GLAD2(vendored)
+
 void Dexium::Mesh::destroy() {
 	if (VBO) glDeleteBuffers(1, &VBO);
 	if (EBO) glDeleteBuffers(1, &EBO);
