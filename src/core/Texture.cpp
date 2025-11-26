@@ -20,7 +20,7 @@ Dexium::Texture2D::Texture2D() : width(0), height(0), format(0) {
 	glGenTextures(1, &ID);
 }
 
-void Dexium::Texture2D::load(const std::string& filePath, FilterMode mode) {
+void Dexium::Texture2D::load(const std::string& filePath, Config::FilterMode mode) {
 
 	//Validate if file exists:
 	if (!VFS::exists(filePath)) {
@@ -39,7 +39,7 @@ void Dexium::Texture2D::load(const std::string& filePath, FilterMode mode) {
 	// Texture filters:
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	if (mode == FilterMode::Linear) {
+	if (mode == Config::FilterMode::Linear) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}

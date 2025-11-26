@@ -158,6 +158,7 @@ namespace Dexium::Utils {
 
         // If type = ID16 -> stringID(what was provided as initialisation). If type = UUID -> returns hashed UUID
         std::string str();
+        const std::string str() const;
 
         // If type = ID16 -> ASCII (int) values + '0' padding(Hash-Lite). If type = UUID -> returns hashed UUID
         std::string hash();

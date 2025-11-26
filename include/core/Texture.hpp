@@ -7,14 +7,9 @@
 
 
 #include <core/AssetManager.hpp>
+#include <metadata/TextureConfig.hpp>
 
 namespace Dexium {
-
-
-	enum class FilterMode {
-		Nearest,
-		Linear
-	};
 
 	// Generates a quad mesh and renders a etxture onto that quad
 	class Texture2D {
@@ -29,7 +24,7 @@ namespace Dexium {
 		Texture2D();
 
 		// Use FilterMode::Nearest for pixel art sprites, Linear for a blended natural look
-		void load(const std::string& filePath, FilterMode mode = FilterMode::Nearest);
+		void load(const std::string& filePath, Config::FilterMode mode = Config::FilterMode::Nearest);
 
 
 		//void render(glm::vec4 pos, int textureUnit = 0);

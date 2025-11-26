@@ -144,6 +144,14 @@ std::string Dexium::Utils::ID::str() {
     }
 }
 
+const std::string Dexium::Utils::ID::str() const {
+    if (type == IDType::ID16) {
+        return storage.id16.getStrID();
+    } else {
+        return storage.uuidValue.String();
+    }
+}
+
 std::string Dexium::Utils::ID::hash(){
     if (type == IDType::ID16) {
         return storage.id16.hexID();

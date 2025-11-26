@@ -5,6 +5,7 @@
 
 #include "Material.hpp"
 #include "Camera.hpp"
+#include "Mesh.hpp"
 
 namespace Dexium {
 
