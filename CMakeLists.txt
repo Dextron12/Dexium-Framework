@@ -27,7 +27,8 @@ add_library(Dexium STATIC
 target_include_directories(Dexium PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/STB
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt/src
 )
 
 # -------------------------------------------------------------

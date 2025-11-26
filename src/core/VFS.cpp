@@ -6,6 +6,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#ifdef __linux__
+#include <unistd.h>
+#include <limits>
+#endif
 
 #include <core/VFS.hpp>
 
@@ -22,6 +26,15 @@ void Dexium::VFS::init() {
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     _execPath = std::filesystem::path(buffer).parent_path(); // Gets the working directory
+#endif
+#ifdef __linux__
+    char buf[PATH_MAX] = {0};
+    ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf)-1);
+    if (len == -1) {
+        TraceLog(LOG_FATAL, "[ExecPath]: LINUX (FATAL ERROR): Failed to resolve execPath symlink");
+    }
+    buf[len] = '\0'; //null-termination
+    _execPath = std::filesystem::path(buf).parent_path(); // Gets working directory
 #endif
 
     // If in DEBUG move two folders up to be in project Workspace
