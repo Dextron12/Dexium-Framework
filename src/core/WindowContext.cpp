@@ -7,31 +7,7 @@
 #include "core/helpers.hpp"
 #include "core/versionControl.hpp"
 
-//std::filesystem::path VFS::execPath;
-/* -- DEPREACTED --> Error.hpp has replaced this code
-void TraceLog(int logLevel, const char* text, ...) {
-	va_list args;
-	va_start(args, text);
-
-	switch (logLevel) {
-	case LOG_NONE: break;
-	case LOG_TRACE: std::printf("[Trace]: "); break;
-	case LOG_INFO: std::printf("[Info]: "); break;
-	case LOG_WARNING: std::printf("[Warning]: "); break;
-	case LOG_ERROR: std::printf("[Error]: "); break;
-	case LOG_FATAL: std::printf("[FATAL]: "); break;
-	default: break;
-	}
-
-	std::vprintf(text, args);
-	std::printf("\n");
-	va_end(args);
-
-	if (logLevel == LOG_FATAL) {
-		abort();
-	}
-}
-*/
+#include <gl.h> // This is GLAD2(vendored)
 
 Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int windowWidth, const int windowHeight) {
 	// Get Engine state
@@ -53,7 +29,7 @@ Dexium::WindowContext::WindowContext(const std::string& windowTitle, const int w
 	glfwMakeContextCurrent(window);
 
 	if (!ctx.GLAD_INIT) {
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		if (!gladLoaderLoadGL()) {
 			SignalManager::get().emit("GLAD_Init", false);
 			return;
 		} else {
