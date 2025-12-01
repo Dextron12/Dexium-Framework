@@ -1,0 +1,14 @@
+# Build files
+/build/
+/debug/
+/rel/
+/release/
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+.idea/*
+
+# Project files (testing files)
+Resources/*
