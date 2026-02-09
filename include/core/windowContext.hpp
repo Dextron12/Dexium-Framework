@@ -15,7 +15,20 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+
+// EnTT header for Signal usage
+// REMINDER: EnTT Signals dont take ownership of listeners. Be sure to diconnect at end of lifetime of connected listener
+#include <entt/signal/sigh.hpp>
+
+
 #include <string>
+
+
+// This is  SPECIAL namespace that will store ALL global signals
+namespace Dexium::Globals::Signals {
+    // Remember to disconnect out of scope lsiteners from the signal, or will cause UB
+    inline entt::sigh<void(int, int)> sig_onWindowResize; // engine emits signal on window resize
+}
 
 namespace Dexium::Core {
 
@@ -27,7 +40,7 @@ namespace Dexium::Core {
         }
 
         ~glfwInitializer() {
-            glfwTerminate();
+            //glfwTerminate();
         }
 
         void init() {
@@ -69,6 +82,7 @@ namespace Dexium::Core {
     public:
         GLFWwindow* window;
         int width, height;
+        int baseWidth, baseHeight; // Stores the inital(design) size of the window
 
         windowContext(const std::string& windowTitle, int windowWidth, int windowHeight, glfwInitializer* glfwPtr, GLADInitializer* gladPtr);
         ~windowContext();
@@ -77,11 +91,14 @@ namespace Dexium::Core {
         void startFrame();
         void endFrame();
 
-        // Provide a Signal for window Resize here:
+        // engine internally emits sig_onResize
+        static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
     private:
         glfwInitializer* m_glfw_ = nullptr;
         GLADInitializer* m_glad_ = nullptr;
+
+        void onFrameBufferResize(int w, int h);
     };
 }
 

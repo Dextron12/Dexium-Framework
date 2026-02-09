@@ -6,6 +6,8 @@
 
 #include <core/windowContext.hpp>
 
+#include "Dexium.hpp"
+
 namespace Dexium::Core {
 
     windowContext::windowContext(const std::string &windowTitle, int windowWidth, int windowHeight, glfwInitializer* glfwPtr, GLADInitializer* gladPtr) : m_glfw_(glfwPtr), m_glad_(gladPtr) {
@@ -32,14 +34,50 @@ namespace Dexium::Core {
             return;
         }
 
-        width = windowWidth;
-        height = windowHeight;
+        // Set glfw window resize callback
+        // Callback triggers the sig
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, windowContext::framebuffer_size_callback);
+
+        width = windowWidth; height = windowHeight;
+        baseWidth = windowWidth; baseHeight = windowHeight;
     }
 
     windowContext::~windowContext() {
-        glfwDestroyWindow(window);
-        glfwTerminate();
+        // Manually destroung the window with glfwDestroyWindow() results in an internal
+        // double free of glState and causes glTerminate() to throw a segfault
     }
+
+    void windowContext::startFrame() {
+        glfwPollEvents();
+
+        if (glfwWindowShouldClose(window)) {
+            EngineState::get().m_appState = false;
+        }
+    }
+
+    void windowContext::endFrame() {
+        glfwSwapBuffers(window);
+    }
+
+    void windowContext::framebuffer_size_callback(GLFWwindow *win, int w, int h) {
+        //capture the context of the window
+        auto* ctx = static_cast<windowContext*>(
+            glfwGetWindowUserPointer(win));
+        if (ctx) {
+            ctx->onFrameBufferResize(w, h);
+        }
+    }
+
+    void windowContext::onFrameBufferResize(int w, int h) {
+        Globals::Signals::sig_onWindowResize.publish(w, h);
+
+        //TraceLog(ErrorType::STATUS, "[Window]: Context has resized from {}x{} to {}x{}", width, height, w, h);
+
+        // Update w & h
+        width = w; height = h;
+    }
+
 
 
 }

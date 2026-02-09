@@ -9,11 +9,22 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(DEXIUM_USE_ImGui "Enable Dear ImGui(docking) integration" OFF)
 
 # Specify the filename inside Tests to build as the test application
-set(DEXIUM_LIVE_TEST "reMain.cpp" CACHE STRING "Filename inside Tests/ to compile as the live test")
+set(DEXIUM_LIVE_TEST "textureComm.cpp" CACHE STRING "Filename inside Tests/ to compile as the live test")
 
 # --- Collect Project sources ---
 file(GLOB_RECURSE DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)
 file (GLOB_RECURSE DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
+
+# --- FMT Inclusion (For CXX20 Print + Colours) --> Core Module
+add_subdirectory(third_party/fmt)
+
+# --- EnTT Inclusion (Extensively used throughout Dexium) --> ID system
+add_library(entt INTERFACE)
+target_include_directories(entt INTERFACE third_party/entt/src) # Header only lib
+
+# --- STB_Image Inclusion (Used for loading images into Dexium)
+add_library(stb_image INTERFACE)
+target_include_directories(stb_image INTERFACE third_party/STB/) # Header only
 
 # Validate the live test
 set(LIVE_TEST_SOURCES "")
@@ -54,7 +65,8 @@ add_library(Dexium STATIC
 
 target_include_directories(Dexium PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    #${CMAKE_CURRENT_SOURCE_DIR}/
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt/src
 )
 
 # --- Detect platform and include configuration ---
@@ -72,8 +84,10 @@ endif()
 
 # --- Third-party platform non-specific libs ---
 target_link_libraries(Dexium
-    #PUBLIC fmt_vendor
+    PUBLIC fmt_vendor
     PUBLIC ${DEXIUM_PLATFORM_LIBS} # defined in platform specific CMakeLists(projectConfig) and brings in paltform specific libs
+    PUBLIC entt
+    PUBLIC stb_image
 )
 
 
