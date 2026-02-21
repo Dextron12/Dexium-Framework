@@ -39,7 +39,7 @@ namespace Dexium::Core {
 
             if (!inserted) {
                 // WARN: Overriting existing uniform
-                TraceLog(ErrorType::WARNING, "[Material]: Overwriting uniform '{}' with a new value", name.c_str());
+                TraceLog(LogLevel::WARNING, "[Material]: Overwriting uniform '{}' with a new value", name.c_str());
             }
 
             // Make/Update entry

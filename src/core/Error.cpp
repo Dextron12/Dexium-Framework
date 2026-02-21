@@ -1,96 +1,119 @@
 //
-// Created by Dextron12 on 3/12/25.
+// Created by ethan on 17/2/26.
 //
 
-#include "core/Error.h"
 
-#include <fmt/color.h>
+#include <core/Error.hpp>
+
+#include <array>
 
 
-namespace Dexium::Core {
+void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<LoggerOutput> output, Override<LoggerFormat> format) {
+    // Deduce outputs
+    LoggerOutput finalOutputs = output.enabled ? output.value : outputs;
 
-    void Logger::log(ErrorType type, const std::string &msg) {
-        // Store message into buffer + update buffer head
-        m_messages[head] = msg;
-        head = (head + 1) % MaxMessages;
-        if (count < MaxMessages) count++;
-
-        std::string output;
-
-        // If SpamPrevention system is enabled (LogOutput::StackLogs)
-        if (hasFlag(outputs, LogOutput::StackLogs)) {
-            // Spam Prevention system is enabled
-            auto key = m_storedLogs.find(msg); // Searches for raw msg
-            if (key != m_storedLogs.end()) {
-                // Message exists, check if duplicateFlags has been triggered
-
-            } else {
-                // Track raw log
-            }
-        }
-
-        // Output the latest message (if enabled)
-        if (hasFlag(outputs, LogOutput::Stdout)) {
-            // Logger has Stdout enabled:
-
-            // Prepends the ErrorType onto the msg
-            if (hasFlag(outputs, LogOutput::PrefixErrorType)) {
-                switch (type) {
-                    case ErrorType::STATUS:
-                        output = "[Status] ";
-                        break;
-                    case ErrorType::DEBUG:
-                        output = "[Debug] ";
-                        break;
-                    case ErrorType::WARNING:
-                        output = "[Warning] ";
-                        break;
-                    case ErrorType::ERROR:
-                        output = "[Error] ";
-                        break;
-                    case ErrorType::FATAL:
-                        output = "[Fatal] ";
-                        break;
-                    default:
-                        fmt::print(stderr, fg(fmt::color::purple), "[Engine Notice]: Unsupported ErrorType has been defined!");
-                }
-            }
-
-            if (hasFlag(outputs, LogOutput::PrettyPrint)) {
-                // Print message in colour according to the colour scheme defined under the PRETTY_PRINT definition in the header
-                if (type == ErrorType::STATUS) {
-                    fmt::print(stderr, fg(fmt::color::light_green), output + msg + "\n");
-                }
-                if (type == ErrorType::DEBUG) {
-                    fmt::print(stderr, fg(fmt::color::sky_blue), output + msg + "\n");
-                }
-                if (type == ErrorType::WARNING) {
-                    fmt::print(stderr, fg(fmt::color::yellow), output + msg + "\n");
-                }
-                if (type == ErrorType::ERROR) {
-                    fmt::print(stderr, fg(fmt::color::pale_violet_red), output + msg + "\n");
-                }
-                if (type == ErrorType::FATAL) {
-                    fmt::print(stderr, fg(fmt::color::medium_purple), output + msg + "\n");
-                }
-            } else {
-                fmt::print(stderr, fg(fmt::color::white), output + msg + "\n");
-            }
-        }
-
-        // Forces a stdout buffer flush. Some consoles need manual flushing to show fmt output
-        //fmt::print(stderr, "");
-        // Outputting to stderr should automatically flsuh on ALL systems
+    // Ignore logging instance(or a single call) if no outputs are defined
+    if (finalOutputs == LoggerOutput::None) {
+        return;
     }
 
-    const std::array<std::string, Logger::MaxMessages>& Logger::getLog() const {
-        return m_messages;
+    // Deduce formatting scheme
+    LoggerFormat finalFormat = format.enabled ? format.value : this->format; // Use of `this` to access class member Logger::format is a little dubious
+
+    // Stores the final/resultant log msg
+    std::string finalLog;
+    fmt::color finalCol = TColours.def;
+    finalLog.reserve(msg.length()); // tries toa void reallocs, but if excessive tags are used it may occur anyway
+
+    //Firstly, we want to strip any tags if the formatting optin is enabled
+    // This way if LoggerFormat::PrefixLogLevels si also enabled, this is then added afetr the strip
+    // So this will strip any hard-written tags from the logs (usually internal system locations from where the log is being emitted from)
+
+    //LoggerFormat::StripAllTags functionality
+    if (hasFlag(finalFormat, LoggerFormat::StripAllTags)) {
+        // WARNING: This a simple char stripper, it can break on nested lookups chars('[' | ']')
+        bool inside = false;
+        for (char c : msg) {
+            if (c == '[') {
+                inside = true;
+                continue;
+            }
+
+            if (c == ':') {
+                inside = false;
+                continue;
+            }
+
+            if (!inside) {
+                // Just append the character outside the label into the final buffer
+                finalLog += c;
+            }
+        }
+    } else {
+        // Ensure we are now capturing on finalresult
+        finalLog = msg;
     }
 
-    // Static declaration in header
-    Logger GLogger = {};
+    if (hasFlag(finalFormat, LoggerFormat::PrefixLogLevels)) {
+
+        // Compile-time array for faster output and less verbosity
+        static constexpr std::array<std::string_view, 5> prefixes = {
+            "[Status]: ",
+            "[Debug]: ",
+            "[Warning]: ",
+            "[Error]: ",
+            "[Fatal]: "
+        };
+
+        auto prefix = prefixes[static_cast<size_t>(type)]; // Converts the enum to its underlaying value [0=5] and mapts it to the prefixes array
+        finalLog.insert(0, prefix);
+    }
+
+    if (hasFlag(finalFormat, LoggerFormat::PrettyPrint)) {
+        // Only allow colour definitions when LoggerOutput = Stderr(defualt) or Stdout. Colours cannot be defined in file & DevTerminal will handle its own colours
+        if (hasFlag(finalOutputs, LoggerOutput::Stderr) || hasFlag(finalOutputs, LoggerOutput::Stdout)) {
+            // This is what makes fmt so cool!!
+
+            switch (type) {
+                case LogLevel::STATUS:
+                    finalCol = TColours.status;
+                    break;
+                case LogLevel::DEBUG:
+                    finalCol = TColours.debug;
+                    break;
+                case LogLevel::WARNING:
+                    finalCol = TColours.warning;
+                    break;
+                case LogLevel::ERROR:
+                    finalCol = TColours.error;
+                    break;
+                case LogLevel::FATAL:
+                    finalCol = TColours.fatal;
+                    break;
+            }
+        }
+    }
 
 
+    // Formatting complete, output to ALL provided output streams
+    if (hasFlag(finalOutputs, LoggerOutput::Stderr)) {
+        fmt::print(stderr, fg(finalCol), finalLog + "\n");
+    }
+    if (hasFlag(finalOutputs, LoggerOutput::Stdout)) {
+        fmt::print(stdout, fg(finalCol), finalLog + "\n");
+    }
+    if (hasFlag(finalOutputs, LoggerOutput::DevConsole)) {
+        // Currently No DevConsole impelented, relog msg onto Stderr and provide warning
+        TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: DevConsole si currently not implemented. Falling back to Stderr as the output");
+        // Relog the raw msg
+        TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
+    }
+    if (hasFlag(finalOutputs, LoggerOutput::File)) {
+        // Also currently NOT implemented, reroute to fallback
+        TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: File outputs are currently not implemented! falling back to Stderr(default)");
+        TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
+        // BAD!!!! Real risk of recursive failure and violates cor eprinciples of acyclic logging systems!!
+    }
+    // No need to check for LoggerOutput::None, this is done at the start of the fn as an early exit(Logging is ingored on this flag)
 
 }
-

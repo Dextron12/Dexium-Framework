@@ -3,7 +3,7 @@
 //
 
 #include <core/VFS.hpp>
-#include <core/Error.h>
+#include <core/Error.hpp>
 
 #include <iostream>
 
@@ -62,7 +62,7 @@ namespace Dexium::Core {
      */
     std::filesystem::path VFS::resolve(std::filesystem::path path) {
         if (m_execPath.empty()) {
-            TraceLog(ErrorType::ERROR, "[VFS]: Engine root directoy is NOT defined.\nDid you forget to call VFS::init()?");
+            TraceLog(LogLevel::ERROR, "[VFS]: Engine root directoy is NOT defined.\nDid you forget to call VFS::init()?");
             // We could return an empty apth(fail) here, but what if an end-user uses abs paths without initialisation? Hence, why we dont early exit and providing an error, should be suffiocient enough
             // In any case, the engine is designed to validate paths when critical. So if they are using a rel apth without initilisation, this likely wont be the only error the end-user sees
         }
@@ -80,7 +80,7 @@ namespace Dexium::Core {
                     return (m_execPath / path.relative_path()).lexically_normal();
                 }
             }
-            TraceLog(ErrorType::ERROR, "[VFS]: Identified '{}' as an abs path, but cannot validate it", path.string());
+            TraceLog(LogLevel::ERROR, "[VFS]: Identified '{}' as an abs path, but cannot validate it", path.string());
             return {};
         }
 
@@ -88,7 +88,7 @@ namespace Dexium::Core {
         auto abs = (m_execPath / path).lexically_normal();
         if (std::filesystem::exists(abs)) return abs;
         else {
-            TraceLog(ErrorType::ERROR, "[VFS]: Identified '{}' has a relative path, attempted to resolve from virtual_path into: {}, but, the abs path is not valid", path.string(), abs.string());
+            TraceLog(LogLevel::ERROR, "[VFS]: Identified '{}' has a relative path, attempted to resolve from virtual_path into: {}, but, the abs path is not valid", path.string(), abs.string());
         }
 
         return {}; // Failed tor eoslve for some reason or the other

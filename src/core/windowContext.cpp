@@ -72,7 +72,7 @@ namespace Dexium::Core {
     void windowContext::onFrameBufferResize(int w, int h) {
         Globals::Signals::sig_onWindowResize.publish(w, h);
 
-        //TraceLog(ErrorType::STATUS, "[Window]: Context has resized from {}x{} to {}x{}", width, height, w, h);
+        //TraceLog(LogLevel::STATUS, "[Window]: Context has resized from {}x{} to {}x{}", width, height, w, h);
 
         // Update w & h
         width = w; height = h;

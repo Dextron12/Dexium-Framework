@@ -71,7 +71,7 @@ class Game : public Dexium::Core::GameLayer {
         if (glfwGetKey(ctx.getWindowContext().window, GLFW_KEY_P) == GLFW_PRESS) {
             std::chrono::duration<double> dur = std::chrono::steady_clock::now() - startTime;
             startTime = std::chrono::steady_clock::now();
-            TraceLog(ErrorType::DEBUG, "Duration since last frame: {}", dur.count());
+            TraceLog(LogLevel::DEBUG, "Duration since last frame: {}", dur.count());
         }
     }
 
@@ -97,7 +97,12 @@ int main() {
     auto& ctx = EngineState::get();
 
     // Configure engine G-Logger
-    Dexium::Core::GLogger.outputs |= LogOutput::Stdout | LogOutput::PrettyPrint;
+    //Dexium::Core::GLogger.outputs |= LogOutput::Stdout | LogOutput::PrettyPrint;
+    createLogger(Dexium::Core::LoggerOutput::Stderr, Dexium::Core::LoggerFormat::PrettyPrint | Dexium::Core::LoggerFormat::PrefixLogLevels);
+
+    if (Dexium::Core::LogService::use()) {
+        TraceLog(LogLevel::STATUS, Dexium::Core::LoggerOutput::Stderr, "Logger is loaded");
+    }
 
     // Overwrite execPath to working dir
     VFS::overwriteExecPath(VFS::getExecutablePath().parent_path());

@@ -4,7 +4,7 @@
 
 #include <core/Mesh.hpp>
 
-#include <core/Error.h>
+#include <core/Error.hpp>
 
 namespace Dexium::Core {
 
@@ -32,7 +32,7 @@ namespace Dexium::Core {
                 indices = MeshData::quadIndices;
                 break;
             default:
-                TraceLog(ErrorType::WARNING, "[Mesh]: Unsupported mesh type requested to generate");
+                TraceLog(LogLevel::WARNING, "[Mesh]: Unsupported mesh type requested to generate");
                 break;
         }
 
@@ -42,7 +42,7 @@ namespace Dexium::Core {
     }
 
     void Mesh::generateMesh(MeshType::Mesh3D type) {
-        TraceLog(ErrorType::WARNING, "[Mesh]: Hold ya horsies!! Dexium is still in experimental 2D and therefore no 3D meshes exist yet!");
+        TraceLog(LogLevel::WARNING, "[Mesh]: Hold ya horsies!! Dexium is still in experimental 2D and therefore no 3D meshes exist yet!");
     }
 
 

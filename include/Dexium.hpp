@@ -3,7 +3,7 @@
 #define DEXIUM_HPP
 
 // Utils
-#include <core/Error.h> // Provides TraceLog and Logging features
+#include <core/Error.hpp> // Provides TraceLog and Logging features
 #include <core/Colour.h> // Provies Colour
 
 #include <core/windowContext.hpp>
@@ -22,9 +22,6 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-using ErrorType = Dexium::Core::ErrorType;
-using LogOutput = Dexium::Core::LogOutput;
 
 using Shader = Dexium::Core::Shader;
 using Camera = Dexium::Core::Camera;
@@ -48,6 +45,8 @@ public:
     // Layer management
     static void addLayer(const std::string& layerID, std::unique_ptr<Dexium::Core::AppState> layer);
 
+    // Logger Sub-system. Create a new logger with createLogger()
+    std::unique_ptr<Dexium::Core::Logger> logger; // If no logger is present in debug build a panic msg will be printed before supression, otherwise in REL builds logs will automatically be suppressed
 private:
     EngineState();
     ~EngineState() = default;
@@ -74,6 +73,11 @@ private:
 };
 
 void clearColour(Colour colour);
+
+// outputStreams dictate where the logger outputs its messages, multiple outputs can be used.
+// format dictates the style, features and colour that the logs are output in
+// These define the state level operations of the Logger, but can also be indvidually overriden per log
+void createLogger(Dexium::Core::LoggerOutput outputStreams, Dexium::Core::LoggerFormat format);
 
 
 

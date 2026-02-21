@@ -11,7 +11,7 @@
 #include <stb_image.h>
 
 #include <core/VFS.hpp>
-#include <core/Error.h>
+#include <core/Error.hpp>
 
 #include "fmt/printf.h"
 
@@ -124,7 +124,7 @@ namespace Dexium::Core {
             auto p = VFS::resolve(path);
             if (p.empty()) {
                 // Couldnt get an ABS path extraction. failed to laod
-                TraceLog(ErrorType::ERROR, "[Texture]: Failed to load texture, path '{}' is invalid", p.string());
+                TraceLog(LogLevel::ERROR, "[Texture]: Failed to load texture, path '{}' is invalid", p.string());
                 return false;
             }
 
@@ -134,7 +134,7 @@ namespace Dexium::Core {
 
             unsigned char* data = stbi_load(p.c_str(), &width, &height, &nrChannels, 0);
             if (!data) {
-                TraceLog(ErrorType::ERROR, "[Texture]: Failed to load texture from '{}'", p.c_str());
+                TraceLog(LogLevel::ERROR, "[Texture]: Failed to load texture from '{}'", p.c_str());
                 return false;
             }
 

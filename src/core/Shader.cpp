@@ -3,7 +3,7 @@
 //
 
 #include <core/Shader.hpp>
-#include <core/Error.h>
+#include <core/Error.hpp>
 #include <core/VFS.hpp>
 
 #include <fstream>
@@ -21,14 +21,14 @@ namespace Dexium::Core {
             auto vPath = VFS::resolve(vertex);
             if (vPath.empty()) {
                 // Path failed to resolve, It cannot be loaded
-                TraceLog(ErrorType::ERROR, "[Shader][Vertex]: Cannot load a vertex comp from '{}', it is invalid", vertex);
+                TraceLog(LogLevel::ERROR, "[Shader][Vertex]: Cannot load a vertex comp from '{}', it is invalid", vertex);
                 return;
             }
 
             auto fPath = VFS::resolve(fragment);
             if (fPath.empty()) {
                 // Path failed to resolve, it cannot be laoded
-                TraceLog(ErrorType::ERROR, "[Shader][Vertex]: Cannot load a fragment comp from '{}', it is invalid", fragment);
+                TraceLog(LogLevel::ERROR, "[Shader][Vertex]: Cannot load a fragment comp from '{}', it is invalid", fragment);
                 return;
             }
 
@@ -38,10 +38,10 @@ namespace Dexium::Core {
 
 
             if (!std::filesystem::exists(vertexPath)) {
-                TraceLog(ErrorType::WARNING, "[Shader][Vertex]: The vertex path '{}' is invalid", vertexPath);
+                TraceLog(LogLevel::WARNING, "[Shader][Vertex]: The vertex path '{}' is invalid", vertexPath);
             }
             if (!std::filesystem::exists(fragmentPath)) {
-                TraceLog(ErrorType::WARNING, "[Shader][Fragment]: The fragment path '{}' is invalid", fragmentPath);
+                TraceLog(LogLevel::WARNING, "[Shader][Fragment]: The fragment path '{}' is invalid", fragmentPath);
             }
 
             // Attempt to read code from files
@@ -65,18 +65,18 @@ namespace Dexium::Core {
                 vertexCode = vShaderStream.str();
                 fragmentCode = fShaderStream.str();
             } catch (std::ifstream::failure e) {
-                TraceLog(ErrorType::ERROR, "[Shader][File Read]: Failed to read streams from Vertex: '{}' and Fragment: '{}', Reason: {}", vertexPath, fragmentPath, e.what());
+                TraceLog(LogLevel::ERROR, "[Shader][File Read]: Failed to read streams from Vertex: '{}' and Fragment: '{}', Reason: {}", vertexPath, fragmentPath, e.what());
             }
         }
     }
 
     void Shader::compile() {
         if (vertexCode.empty()) {
-            TraceLog(ErrorType::ERROR, "[Shader][Vertex]: Vertex buffer is empty, cannot compile shader with no vertex");
+            TraceLog(LogLevel::ERROR, "[Shader][Vertex]: Vertex buffer is empty, cannot compile shader with no vertex");
             return;
         }
         if (fragmentCode.empty()) {
-            TraceLog(ErrorType::ERROR, "[Shader][Fragment]: Fragment buffer is empty, cannot compile shader with no fragment");
+            TraceLog(LogLevel::ERROR, "[Shader][Fragment]: Fragment buffer is empty, cannot compile shader with no fragment");
             return;
         }
 
@@ -98,7 +98,7 @@ namespace Dexium::Core {
         glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-            TraceLog(ErrorType::ERROR, "[Shader Compiler](Vertex): ---VERTEX ERROR STACK: ---\n{}", infoLog);
+            TraceLog(LogLevel::ERROR, "[Shader Compiler](Vertex): ---VERTEX ERROR STACK: ---\n{}", infoLog);
             glDeleteShader(vertex);
             return;
         }
@@ -110,7 +110,7 @@ namespace Dexium::Core {
         glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-            TraceLog(ErrorType::ERROR, "[Shader Compiler](Fragment): --- FRAGMENT ERROR STACK: ---\n{}", infoLog);
+            TraceLog(LogLevel::ERROR, "[Shader Compiler](Fragment): --- FRAGMENT ERROR STACK: ---\n{}", infoLog);
             glDeleteShader(vertex);
             glDeleteShader(fragment);
             return;
@@ -124,7 +124,7 @@ namespace Dexium::Core {
         glGetProgramiv(ID, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(ID, 512, NULL, infoLog);
-            TraceLog(ErrorType::ERROR, "[Shader Compiler](Program): --- PROGRAM ERROR STACK: ---\n{}", infoLog);
+            TraceLog(LogLevel::ERROR, "[Shader Compiler](Program): --- PROGRAM ERROR STACK: ---\n{}", infoLog);
             glDeleteProgram(ID); // Forces the Shader obj to become invalid
             ID = 0;
             return;
@@ -138,12 +138,12 @@ namespace Dexium::Core {
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 
-        TraceLog(ErrorType::DEBUG, "[Shader]: Successfully compiled shader program");
+        TraceLog(LogLevel::DEBUG, "[Shader]: Successfully compiled shader program");
     }
 
     void Shader::bind() {
         if (ID == 0) {
-            TraceLog(ErrorType::WARNING, "[Shader]: Attempting to bind an invalid shader");
+            TraceLog(LogLevel::WARNING, "[Shader]: Attempting to bind an invalid shader");
             return;
         }
 

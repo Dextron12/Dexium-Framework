@@ -136,5 +136,27 @@ void clearColour(Colour colour) {
     glClearColor(colour.r(), colour.g(), colour.b(), colour.a());
 }
 
+void createLogger(Dexium::Core::LoggerOutput outStreams, Dexium::Core::LoggerFormat format) {
+    //Fethc engine context
+    auto& logSvs = Dexium::Core::LogService::use();
+
+    if (!logSvs) {
+        // NO logger currently exists
+        logSvs = std::make_unique<Dexium::Core::Logger>();
+        // Logger class has no explicit ctr that takes the required inputs, manually assign instead
+        logSvs->outputs = outStreams;
+        logSvs->format = format;
+
+#ifdef DEBUG
+        TraceLog(LogLevel::DEBUG, "[CreateLogger]: Logger sub-system successfully initialised!");
+        #endif
+    } else {
+        // Logger already exists, output warning of multiple calls 9If in debug)
+#ifdef DEBUG
+        TraceLog(LogLevel::WARNING, "[CreateLogger]: Sub-system already initialised, are you calling this function multiple times?\nSet ctx.logger = nullptr if you want to delete");
+#endif
+    }
+}
+
 
 

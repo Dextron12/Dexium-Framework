@@ -34,7 +34,7 @@ namespace Dexium::Core {
         for (auto& comm : commands) {
             //Check viewport state and update
             if (comm.viewportID < 0) {
-                TraceLog(ErrorType::ERROR, "[Renderer]: No viewport defined for the specified renderCommand");
+                TraceLog(LogLevel::ERROR, "[Renderer]: No viewport defined for the specified renderCommand");
                 continue;
             }
             /*if (comm.viewport->isDirty()) {
@@ -65,21 +65,21 @@ namespace Dexium::Core {
         for (auto& comm : commands) {
             // validate ptr's
             if (!comm.mesh) {
-                TraceLog(ErrorType::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Mesh. Ignoring the command!");
+                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Mesh. Ignoring the command!");
                 continue;
             }
             if (!comm.material) {
-                TraceLog(ErrorType::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Material. Ignoring the command!");
+                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Material. Ignoring the command!");
                 continue;
             }
             if (!comm.transform) {
-                TraceLog(ErrorType::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Transform. Ignoring the command!");
+                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Transform. Ignoring the command!");
                 continue;
             }
             if (comm.viewportID < 0) {
                 // Need to decide, if we should error and ingore the current comm if no viewport is provided
                 // If no viewport, GL jsut uses the defautl viewport created at window creation. So resizing wont apply correctly
-                TraceLog(ErrorType::WARNING, "[Renderer]: No viewport has been specified for the render comm. Rendering will fallback to default viewport");
+                TraceLog(LogLevel::WARNING, "[Renderer]: No viewport has been specified for the render comm. Rendering will fallback to default viewport");
                 // Set comm->viewport to default(0)
                 comm.viewportID = 0;
             }
@@ -126,7 +126,7 @@ namespace Dexium::Core {
     int Renderer::createViewport(int x, int y, int designWidth, int designHeight) {
         // Check for invalid windowCtx
         if (m_windowCtx == nullptr) {
-            TraceLog(ErrorType::FATAL, "[Renderer]: Context is out of scope! Either an invalid context were provided to the renderer on creation, or it has been manually deleted/freed");
+            TraceLog(LogLevel::FATAL, "[Renderer]: Context is out of scope! Either an invalid context were provided to the renderer on creation, or it has been manually deleted/freed");
         }
         const windowContext& winCtx = *m_windowCtx;
         m_viewports.emplace_back(winCtx, x, y, designWidth, designHeight);
@@ -134,7 +134,7 @@ namespace Dexium::Core {
         // Get size and return ID
         auto count = m_viewports.size();
         if (count == 1) {
-            TraceLog(ErrorType::STATUS, "[Renderer]: Default Viewport created: Defined as [X: {}, Y: {}, W: {}, H: {}", x, y, designWidth, designHeight);
+            TraceLog(LogLevel::STATUS, "[Renderer]: Default Viewport created: Defined as [X: {}, Y: {}, W: {}, H: {}", x, y, designWidth, designHeight);
         }
 
         return count;

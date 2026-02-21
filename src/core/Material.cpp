@@ -9,7 +9,7 @@ namespace Dexium::Core {
     void Material::remUniform(const std::string &name) {
         if (uniforms.find(name) != uniforms.end()) {
             uniforms.erase(name);
-            TraceLog(ErrorType::STATUS, "[Material]: Removed the uniform '{}' from material", name);
+            TraceLog(LogLevel::STATUS, "[Material]: Removed the uniform '{}' from material", name);
         }
     }
 

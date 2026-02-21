@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <core/Error.h>
+#include <core/Error.hpp>
 
 namespace Dexium::Core {
 
@@ -39,7 +39,7 @@ namespace Dexium::Core {
             }
             // Check if the location of the uniform exists (may be optimized out)
             if (loc == -1) {
-                TraceLog(ErrorType::WARNING, "[Shader]: Uniform '{}' not found in shader", name.c_str());
+                TraceLog(LogLevel::WARNING, "[Shader]: Uniform '{}' not found in shader", name.c_str());
                 return;
             }
             // Set the uniform for its type
@@ -62,7 +62,7 @@ namespace Dexium::Core {
             } else if constexpr (std::is_same_v<T, glm::mat4>) {
                 glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
             } else {
-                TraceLog(ErrorType::ERROR, "[Shader]: Unsupported uniform value requested to be set");
+                TraceLog(LogLevel::ERROR, "[Shader]: Unsupported uniform value requested to be set");
             }
         }
 
