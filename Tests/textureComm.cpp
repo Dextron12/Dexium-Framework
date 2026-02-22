@@ -33,7 +33,8 @@ class Game : public Dexium::Core::GameLayer {
 
     Dexium::Core::Viewport viewport;//(ctx.getWindowContext(), 0, 0, 1080, 720);
 
-    std::chrono::steady_clock::time_point startTime;
+
+    Dexium::Utils::MonoClock mc;
 
     void onInit() override {
         glEnable(GL_BLEND);
@@ -57,8 +58,6 @@ class Game : public Dexium::Core::GameLayer {
 
         tex.flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Repeat | Dexium::Core::TexFlags::Mipmaps;
         tex.load("Cute_Fantasy/Buildings/Buildings/Houses/Limestone/House_2_Limestone_Base_Black.png");
-
-        startTime = std::chrono::steady_clock::now();
     }
 
 
@@ -68,10 +67,10 @@ class Game : public Dexium::Core::GameLayer {
             glfwSetWindowShouldClose(ctx.getWindowContext().window, GLFW_TRUE);
         }
 
+        mc.update();
+
         if (glfwGetKey(ctx.getWindowContext().window, GLFW_KEY_P) == GLFW_PRESS) {
-            std::chrono::duration<double> dur = std::chrono::steady_clock::now() - startTime;
-            startTime = std::chrono::steady_clock::now();
-            TraceLog(LogLevel::DEBUG, "Duration since last frame: {}", dur.count());
+            TraceLog(LogLevel::DEBUG, "Duration since last frame: {}", mc.delta());
         }
     }
 
@@ -80,7 +79,7 @@ class Game : public Dexium::Core::GameLayer {
         Dexium::Core::RenderCommand comm;
         comm.mesh = &mesh;
         comm.material = &mat;
-        auto pos = Dexium::Core::Transform(glm::vec3(250,250,0));
+        auto pos = Dexium::Core::Transform(glm::vec3(250,250,0), {0,0,0}, {32, 32, 0});
         comm.transform = &pos;
         //comm.viewport = &viewport;
         renderer.submit(comm);

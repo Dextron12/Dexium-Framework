@@ -6,10 +6,9 @@
 #include <core/Error.hpp>
 #include <core/VFS.hpp> // To get the project working dir
 
-#include <utils/Time.hpp>
-
 #include <array>
-#include <filesystem>
+
+// Both libs sued for writing to log files
 #include <iostream>
 #include <fstream>
 
@@ -58,6 +57,52 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
     } else {
         // Ensure we are now capturing on finalresult
         finalLog = msg;
+    }
+
+    // Check if LoggerFormat::ImmediateMode is disabled
+    // If so, cache log and skip outputting
+    if (!hasFlag(finalFormat, LoggerFormat::ImmediateMode)) {
+        auto it = m_cachedLogs.find(finalLog);
+
+        // Update the Logger cached clock
+        m_CacheClock.update();
+
+        if (it == m_cachedLogs.end()) {
+            // Not yet cvached, catch it here
+            m_cachedLogs.emplace(finalLog, LogCacheEntry{
+            m_CacheClock.elapsed() + delayCahceTime,
+            1,
+            false
+            });
+        } else {
+            // Log already cached, check if it has been output before
+            auto& entry = it->second;
+
+            if (entry.hasOutput) {
+                // Already output, jsut udpate the timer
+                entry.expTime = m_CacheClock.elapsed() + delayCahceTime;
+            } else {
+                // Log hasn't bene output, prepend '[~]' and output it
+                finalLog.insert(0, "[~]");
+
+                //logToSinks
+
+                // Update the output and increment the seen count
+                entry.hasOutput = true;
+                entry.seenCount++;
+                entry.expTime = m_CacheClock.elapsed() + delayCahceTime;
+            }
+            return;
+        }
+
+        // Iterate through the map to check for expired timers
+        for (auto i = m_cachedLogs.begin(); i != m_cachedLogs.end();) {
+            if (i->second.expTime < m_CacheClock.elapsed()) {
+                i = m_cachedLogs.erase(i); // Erase expired entry adn return the next one
+            } else {
+                ++i; // Only increment if not erasing
+            }
+        }
     }
 
     if (hasFlag(finalFormat, LoggerFormat::PrefixLogLevels)) {

@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <core/Renderer.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp> // Used to print glm::mat
+
 namespace Dexium::Globals {
     GLbitfield GwinMasks = 0;
 }
@@ -76,6 +79,12 @@ namespace Dexium::Core {
                 TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Transform. Ignoring the command!");
                 continue;
             }
+
+            //fmt::print(stderr, fg(fmt::color::blue), comm.)
+
+            //fmt::print(stderr, fg(fmt::color::green), "{}\n", glm::to_string(comm.transform->ModelMatrix()));
+            //comm.material->shader->setUniform("model", comm.transform->ModelMatrix());
+
             if (comm.viewportID < 0) {
                 // Need to decide, if we should error and ingore the current comm if no viewport is provided
                 // If no viewport, GL jsut uses the defautl viewport created at window creation. So resizing wont apply correctly
@@ -96,7 +105,7 @@ namespace Dexium::Core {
             // (... then back in this bit of code, we can bind and activate to each specified texture unit, perhaps use a texture unit recycler too
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, 1);
-            comm.material->shader->setUniform("tex", 0);
+            comm.material->shader->setUniform("tex", 1);
 
             // Set shader uniforms (per material)
             for (auto& pair : comm.material->getUniforms()) {

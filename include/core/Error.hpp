@@ -7,7 +7,6 @@
 
 // Standard Libs
 #include <string>
-#include <chrono> // Time management for spam prevention
 #include <unordered_map>
 
 // FMT, only the best library out there! Used for CXX20 style print and colour formatting
@@ -17,11 +16,12 @@
 
 // Templated Bitmask operator class
 #include <core/BitwiseFlag.hpp>
+// Defines MonoClock, used for caching logs by time
+#include <utils/Time.hpp>
 
 
 #include <memory>
 #include <atomic> // For use for atomic_bool in TraceLog(), avoids mutexes, but we should test to see if atomic_bool is any slower than a mutex
-
 
 /*
  * This Header defines the Dexium-Framework Logger implementation
@@ -103,6 +103,12 @@ namespace Dexium::Core {
         }
     };
 
+    struct LogCacheEntry {
+        double expTime;
+        int seenCount = 0; // What about int overflow??
+        bool hasOutput = false; // HAs the Logger already otputt he cached log?
+    };
+
     class Logger {
     public:
         // State-level bitmasks
@@ -113,11 +119,16 @@ namespace Dexium::Core {
         std::string LogFolderName = "Logs"; // The name of the folder in where to store all logs. Allows overwriting per Logger
         std::string logfilePrefix = "Dexium-Crash";
 
+        float delayCahceTime = 1.5; // Measured in seconds, determines how long a messaged is delayed before outputting to the requested sinks, allows tracking multiples of same messages
+
         // The internal logging func to 'TraceLog' and handles all output logic for TraceLog(Which is a thin globally accessible wrapper of this func)
         void log(LogLevel type, const std::string& msg, Override<LoggerOutput> l_output = Override<LoggerOutput>::Inherit(), Override<LoggerFormat> l_format = Override<LoggerFormat>::Inherit());
     private:
         // Records the logged stream to the last ln of the dated log file, or creates a new logfile if one didnt previsouly exist
         void writeLog(LogLevel type, const std::string& msg);
+
+        std::unordered_map<std::string, LogCacheEntry> m_cachedLogs;
+        Utils::MonoClock m_CacheClock;
     };
 }
 
