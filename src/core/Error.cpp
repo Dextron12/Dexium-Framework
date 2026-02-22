@@ -4,8 +4,14 @@
 
 
 #include <core/Error.hpp>
+#include <core/VFS.hpp> // To get the project working dir
+
+#include <utils/Time.hpp>
 
 #include <array>
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 
 
 void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<LoggerOutput> output, Override<LoggerFormat> format) {
@@ -104,16 +110,62 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
     }
     if (hasFlag(finalOutputs, LoggerOutput::DevConsole)) {
         // Currently No DevConsole impelented, relog msg onto Stderr and provide warning
-        TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: DevConsole si currently not implemented. Falling back to Stderr as the output");
+        //TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: DevConsole si currently not implemented. Falling back to Stderr as the output");
+        fmt::print(stderr, fg(TColours.error), "[Logger]: DevConsole is currently not implemented. falling back to Stderr(Default)");
         // Relog the raw msg
-        TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
+        //TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
+        fmt::print(stderr, fg(finalCol), finalLog + "\n");
     }
     if (hasFlag(finalOutputs, LoggerOutput::File)) {
-        // Also currently NOT implemented, reroute to fallback
-        TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: File outputs are currently not implemented! falling back to Stderr(default)");
-        TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
-        // BAD!!!! Real risk of recursive failure and violates cor eprinciples of acyclic logging systems!!
+        this->writeLog(type, finalLog);
     }
     // No need to check for LoggerOutput::None, this is done at the start of the fn as an early exit(Logging is ingored on this flag)
+
+}
+
+void Dexium::Core::Logger::writeLog(LogLevel type, const std::string &msg) {
+    // Takes a formatted log msg, prepends with date & time and outputs to a log file
+    // If the Log Folder doesnt exist, it will create it.
+
+    // Check LogFolder existence or create existence
+    std::filesystem::path logDir(VFS::getExecutablePath().string() + LogFolderName + "/");
+    logDir = logDir.lexically_normal();
+
+    if (!std::filesystem::exists(logDir)) {
+        // Log Folde rnot found, create it
+        std::error_code ec;
+        if (!std::filesystem::create_directories(logDir, ec)) {
+            // Failed to create path
+            if (ec) {
+                // Genuine error, report it
+                fmt::print(stderr, fg(TColours.error), "[Error]: [Logger][WriteToFile]: Failed to create directory '{}'\nReason: {}", logDir.string(), ec.message());
+            }
+            // File/Path already exists, continue
+        }
+        //Directory created sucessfully, continue
+    }
+
+    // Create logFileName from todays dat and filePrefix
+    Utils::localTime l_time{};
+    const std::string fileName = fmt::format("{}-{}-{}-{}.log", logfilePrefix, l_time.Day, l_time.Month, l_time.Year);
+
+    // Check if a log for today already created, if not make a new one
+    logDir /= std::filesystem::path("/" + fileName).lexically_normal();
+
+    std::ofstream logFile(logDir.string());
+
+    if (logFile.is_open()) {
+        //File open, now write log
+        logFile << fmt::format("[{}:{}:{} {}]: {}\n", l_time.Hr.to12(), l_time.Minute, l_time.Second, l_time.Hr.am_pm(), msg);
+    } else {
+        // file failed to open, fallback method
+        fmt::print(stderr, fg(TColours.error), "[Error]: Failed to write to log file! Using fallback sink!(Stderr)\n");
+        fmt::print(stderr, fg(TColours.warning), "{}\n", msg);
+    }
+
+    // CLose file
+    logFile.close();
+
+
 
 }

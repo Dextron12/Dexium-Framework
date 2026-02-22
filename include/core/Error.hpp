@@ -110,6 +110,9 @@ namespace Dexium::Core {
         LoggerFormat format = LoggerFormat::None; // Leave the formating up to the usr
 
         Detail::TerminalColourOutputs TColours; // Only is used if LoggerFormat::PrettyPrint & (LoggerOutput::Stderr(default) | LoggerOutput::Stdout) is present
+        std::string LogFolderName = "Logs"; // The name of the folder in where to store all logs. Allows overwriting per Logger
+        std::string logfilePrefix = "Dexium-Crash";
+
         // The internal logging func to 'TraceLog' and handles all output logic for TraceLog(Which is a thin globally accessible wrapper of this func)
         void log(LogLevel type, const std::string& msg, Override<LoggerOutput> l_output = Override<LoggerOutput>::Inherit(), Override<LoggerFormat> l_format = Override<LoggerFormat>::Inherit());
     private:

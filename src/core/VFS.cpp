@@ -107,7 +107,6 @@ namespace Dexium::Core {
     void VFS::overwriteExecPath(std::filesystem::path execPath) {
         if (std::filesystem::exists(execPath) && std::filesystem::is_directory(execPath)) {
             m_execPath = execPath;
-            std::cout << "Set execPath to:  " << execPath << std::endl;
         } else {
             std::cout << "cannot change execPath to: " << execPath << " it is invalid" << std::endl;
         }
