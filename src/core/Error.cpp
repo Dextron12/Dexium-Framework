@@ -59,67 +59,6 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
         finalLog = msg;
     }
 
-    // Check if LoggerFormat::ImmediateMode is disabled
-    // If so, cache log and skip outputting
-    if (!hasFlag(finalFormat, LoggerFormat::ImmediateMode)) {
-        auto it = m_cachedLogs.find(finalLog);
-
-        // Update the Logger cached clock
-        m_CacheClock.update();
-
-        if (it == m_cachedLogs.end()) {
-            // Not yet cvached, catch it here
-            m_cachedLogs.emplace(finalLog, LogCacheEntry{
-            m_CacheClock.elapsed() + delayCahceTime,
-            1,
-            false
-            });
-        } else {
-            // Log already cached, check if it has been output before
-            auto& entry = it->second;
-
-            if (entry.hasOutput) {
-                // Already output, jsut udpate the timer
-                entry.expTime = m_CacheClock.elapsed() + delayCahceTime;
-            } else {
-                // Log hasn't bene output, prepend '[~]' and output it
-                finalLog.insert(0, "[~]");
-
-                //logToSinks
-
-                // Update the output and increment the seen count
-                entry.hasOutput = true;
-                entry.seenCount++;
-                entry.expTime = m_CacheClock.elapsed() + delayCahceTime;
-            }
-            return;
-        }
-
-        // Iterate through the map to check for expired timers
-        for (auto i = m_cachedLogs.begin(); i != m_cachedLogs.end();) {
-            if (i->second.expTime < m_CacheClock.elapsed()) {
-                i = m_cachedLogs.erase(i); // Erase expired entry adn return the next one
-            } else {
-                ++i; // Only increment if not erasing
-            }
-        }
-    }
-
-    if (hasFlag(finalFormat, LoggerFormat::PrefixLogLevels)) {
-
-        // Compile-time array for faster output and less verbosity
-        static constexpr std::array<std::string_view, 5> prefixes = {
-            "[Status]: ",
-            "[Debug]: ",
-            "[Warning]: ",
-            "[Error]: ",
-            "[Fatal]: "
-        };
-
-        auto prefix = prefixes[static_cast<size_t>(type)]; // Converts the enum to its underlaying value [0=5] and mapts it to the prefixes array
-        finalLog.insert(0, prefix);
-    }
-
     if (hasFlag(finalFormat, LoggerFormat::PrettyPrint)) {
         // Only allow colour definitions when LoggerOutput = Stderr(defualt) or Stdout. Colours cannot be defined in file & DevTerminal will handle its own colours
         if (hasFlag(finalOutputs, LoggerOutput::Stderr) || hasFlag(finalOutputs, LoggerOutput::Stdout)) {
@@ -145,28 +84,96 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
         }
     }
 
+    if (hasFlag(finalFormat, LoggerFormat::PrefixLogLevels)) {
 
+        // Compile-time array for faster output and less verbosity
+        static constexpr std::array<std::string_view, 5> prefixes = {
+            "[Status]: ",
+            "[Debug]: ",
+            "[Warning]: ",
+            "[Error]: ",
+            "[Fatal]: "
+        };
+
+        auto prefix = prefixes[static_cast<size_t>(type)]; // Converts the enum to its underlaying value [0=5] and mapts it to the prefixes array
+        finalLog.insert(0, prefix);
+    }
+
+    // Check if LoggerFormat::ImmediateMode is disabled
+    // If so, cache log and skip outputting
+    m_CacheClock.update();
+    if (!hasFlag(finalFormat, LoggerFormat::ImmediateMode)) {
+        auto now = m_CacheClock.elapsed();
+
+        // Cleanup expired entries
+        for (auto it = m_cachedLogs.begin(); it != m_cachedLogs.end();) {
+            if (it->second.expTime <= now) {
+                it = m_cachedLogs.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        //Handle incoming log
+        auto it = m_cachedLogs.find(finalLog);
+
+        if (it == m_cachedLogs.end()) {
+            // First time seen --> output immediately
+            //logToSink(finalLog);
+            writeToSinks(finalLog, finalCol, finalOutputs);
+
+            m_cachedLogs.emplace(finalLog, LogCacheEntry{
+            now + delayCahceTime,
+            false       // Repeat that not emitted yet
+            });
+
+            return;
+        } else {
+            // Seen again within time window
+            auto& entry = it->second;
+
+            if (!entry.hasOutput) {
+                finalLog.insert(0, "[~]");
+                //logToSinks(finalLog);
+                writeToSinks(finalLog, finalCol, finalOutputs);
+
+                entry.hasOutput = true;
+            }
+
+            // Refresh suppression window
+            entry.expTime = now + delayCahceTime;
+        }
+
+        return;
+    }
+
+    writeToSinks(finalLog, finalCol, finalOutputs);
+
+}
+
+void Dexium::Core::Logger::writeToSinks(const std::string &logMsg, fmt::color color, LoggerOutput sinks) {
     // Formatting complete, output to ALL provided output streams
-    if (hasFlag(finalOutputs, LoggerOutput::Stderr)) {
-        fmt::print(stderr, fg(finalCol), finalLog + "\n");
+    if (hasFlag(sinks, LoggerOutput::Stderr)) {
+        fmt::print(stderr, fg(color), logMsg + "\n");
     }
-    if (hasFlag(finalOutputs, LoggerOutput::Stdout)) {
-        fmt::print(stdout, fg(finalCol), finalLog + "\n");
+    if (hasFlag(sinks, LoggerOutput::Stdout)) {
+        fmt::print(stdout, fg(color), logMsg + "\n");
     }
-    if (hasFlag(finalOutputs, LoggerOutput::DevConsole)) {
+    if (hasFlag(sinks, LoggerOutput::DevConsole)) {
         // Currently No DevConsole impelented, relog msg onto Stderr and provide warning
         //TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: DevConsole si currently not implemented. Falling back to Stderr as the output");
         fmt::print(stderr, fg(TColours.error), "[Logger]: DevConsole is currently not implemented. falling back to Stderr(Default)");
         // Relog the raw msg
         //TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
-        fmt::print(stderr, fg(finalCol), finalLog + "\n");
+        fmt::print(stderr, fg(color), logMsg + "\n");
     }
-    if (hasFlag(finalOutputs, LoggerOutput::File)) {
-        this->writeLog(type, finalLog);
+    if (hasFlag(sinks, LoggerOutput::File)) {
+        //this->writeLog(type, finalLog);
     }
     // No need to check for LoggerOutput::None, this is done at the start of the fn as an early exit(Logging is ingored on this flag)
 
 }
+
 
 void Dexium::Core::Logger::writeLog(LogLevel type, const std::string &msg) {
     // Takes a formatted log msg, prepends with date & time and outputs to a log file

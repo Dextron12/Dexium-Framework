@@ -105,7 +105,6 @@ namespace Dexium::Core {
 
     struct LogCacheEntry {
         double expTime;
-        int seenCount = 0; // What about int overflow??
         bool hasOutput = false; // HAs the Logger already otputt he cached log?
     };
 
@@ -126,6 +125,8 @@ namespace Dexium::Core {
     private:
         // Records the logged stream to the last ln of the dated log file, or creates a new logfile if one didnt previsouly exist
         void writeLog(LogLevel type, const std::string& msg);
+
+        void writeToSinks(const std::string& logMsg, fmt::color color, LoggerOutput sinks);
 
         std::unordered_map<std::string, LogCacheEntry> m_cachedLogs;
         Utils::MonoClock m_CacheClock;
