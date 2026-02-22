@@ -2,7 +2,6 @@
 
 ---
 ---
-
 ### Changelog: V0.16.6-a
 - Implemented MonoClock. Provides a monotonic clock functionality independent from GLFwGetTime(), but does sue `std::chrono::steady_clock()` and should be noted that this may not deliver the best performance on Windows OS machines.
 
@@ -14,7 +13,7 @@ Changelog: ???
 
 Think its safe to say any prior changelogs have been lost to history due to a certain maintainer accidentally running `sudo rm -rf` on the docs folder, after a rather long debugging night....
 
-Lesson painfully learnt, now I will look toward mainting better changelogs and version updates moving forward.
+Lesson painfully learnt, now I will look toward maintaining better changelogs and version updates moving forward.
 
 I believe the `legacy` branch on the [repo](https://github.com/Dextron12/Dexium-Framework/tree/legacy1) along with the `main` branch will also provide good insight into versioning history in their commit comments.
 
