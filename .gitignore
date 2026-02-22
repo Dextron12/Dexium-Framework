@@ -15,3 +15,7 @@ Resources/*
 Shaders/*
 Cute_Fantasy/*
 Tests/old_targets/*
+
+# Documentation files
+# I use Obsidian vault for MD docs, which creates a obsidian file in eveyr dir it touches
+.obsidian/
