@@ -1,6 +1,18 @@
 ---
 
 ---
+
+---
+
+Changelog: V).16.7-a
+-  Removed implicit global state `gwinMasks` a bit-field enum class that allowed setting aGL buffer to be cleared. 
+	- Now `clearColor` has clear responsiblities and **does not** invoke `glClear` or `glClearColor` but instead instructs the renderer to do so on `Renderer::flush()`
+	- I believe the only other global logic in existence at the moment are:
+		- Window resize event signal `sig_onWindowResize` and the engine state itself `EngineState::get()`.
+- Added a runtime check for Shaders to ensure they have successfully compiled `Shader::isCompiled()` returns a `bool` indicating such
+	- It will be used in `Renderer::Submit` to align with insufficient state not being pushed to the renderer.
+	- Also be sued in `Renderer:Flush()` to ensure even on a hot-reloaded shader, it it fails, it cannot be rendered or actioned(the command)
+
 ---
 ### Changelog: V0.16.6-a
 - Implemented MonoClock. Provides a monotonic clock functionality independent from GLFwGetTime(), but does sue `std::chrono::steady_clock()` and should be noted that this may not deliver the best performance on Windows OS machines.
