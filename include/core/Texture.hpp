@@ -115,6 +115,7 @@ namespace Dexium::Core {
             }
         }
 
+        // Needs to be removed. Renderer needs to do this instead
         void bind(int textureUnit) {
             glActiveTexture(GL_TEXTURE0 + textureUnit);
             glBindTexture(GL_TEXTURE_2D, texID);

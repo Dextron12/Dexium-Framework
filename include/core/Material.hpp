@@ -15,6 +15,9 @@
 
 namespace Dexium::Core {
 
+    //Forward Declare for Texture
+    class Texture;
+
     class Material {
     public:
         using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4>;
@@ -54,12 +57,20 @@ namespace Dexium::Core {
         // Get ref of uniform map
         const std::unordered_map<std::string, UniformValue>& getUniforms() const;
 
+        void setTexture(const std::string& uniformName, Texture* texPtr);
+
+        //Fetch a stored Texture from the material
+        Texture* getTexture(const std::string& uniformName);
+        const std::unordered_map<std::string, Texture*>& getTextures() const;
+
         // We purposely DON'T provide a bind() as the Render will internally handle this
         // But perhaps this funciton should provide one that will allow it to work independent of a renderer
         // to allign material with the phiolosphy of the framework
 
     private:
         std::unordered_map<std::string, UniformValue> uniforms;
+
+        std::unordered_map<std::string, Texture*> textures;
 
 
     };
