@@ -24,8 +24,10 @@ namespace Dexium::Core {
         Shader(const std::string& vertex, const std::string& fragment, bool areFiles = true);
 
         void compile();
+        //Checks if the program compiled withotu errors
+        bool isCompiled() const noexcept { return compiled; }
 
-        void bind();
+        void bind() const;
 
         template<typename T>
         void setUniform(const std::string& name, const T& value) {
@@ -70,6 +72,8 @@ namespace Dexium::Core {
         std::string vertexCode, fragmentCode;
 
         std::unordered_map<std::string, GLint> uniformCache; // Per program uniform cache for lookups (no need for continiously polling locations)
+
+        bool compiled = false; // enabled when shader is successfully compiled
     };
 
 

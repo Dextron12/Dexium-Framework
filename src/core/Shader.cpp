@@ -12,6 +12,7 @@
 namespace Dexium::Core {
     Shader::Shader(const std::string &vertex, const std::string &fragment, bool areFiles) {
 
+        ID = 0;
         if (!areFiles) {
             // data is likely raw sources
             vertexCode = vertex;
@@ -64,7 +65,7 @@ namespace Dexium::Core {
                 // Convert streams to strings
                 vertexCode = vShaderStream.str();
                 fragmentCode = fShaderStream.str();
-            } catch (std::ifstream::failure e) {
+            } catch (std::ifstream::failure& e) {
                 TraceLog(LogLevel::ERROR, "[Shader][File Read]: Failed to read streams from Vertex: '{}' and Fragment: '{}', Reason: {}", vertexPath, fragmentPath, e.what());
             }
         }
@@ -138,10 +139,11 @@ namespace Dexium::Core {
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 
+        compiled = true;
         TraceLog(LogLevel::DEBUG, "[Shader]: Successfully compiled shader program");
     }
 
-    void Shader::bind() {
+    void Shader::bind() const {
         if (ID == 0) {
             TraceLog(LogLevel::WARNING, "[Shader]: Attempting to bind an invalid shader");
             return;
