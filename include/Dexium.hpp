@@ -10,7 +10,6 @@
 #include <core/Layers.hpp>
 #include <core/VFS.hpp>
 #include <core/Colour.h>
-#include <core/Renderer.h>
 
 #include <core/Shader.hpp>
 #include <core/Mesh.hpp>
@@ -22,6 +21,8 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+
+#include "core/Renderer.hpp"
 
 using Shader = Dexium::Core::Shader;
 using Camera = Dexium::Core::Camera;

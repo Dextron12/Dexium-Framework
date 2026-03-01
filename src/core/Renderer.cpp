@@ -1,153 +1,205 @@
 //
-// Created by ethan on 11/12/25.
+// Created by ethan on 24/2/26.
 //
 
-#include <algorithm>
-#include <core/Renderer.h>
+#include <core/Renderer.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp> // Used to print glm::mat
+// Finish forward declares 9Avoids cross incldue dependsencies)
 
-namespace Dexium::Globals {
-    GLbitfield GwinMasks = 0;
-}
+#include <core/Mesh.hpp>
+#include <core/Material.hpp>
+#include <core/Transform.h>
+
+#include <core/viewport.hpp>
+#include <core/windowContext.hpp>
+
+#include "core/Texture.hpp"
 
 namespace Dexium::Core {
 
-    void Renderer::submit(const RenderCommand& command) {
-        commands.push_back(command);
+    RenderTarget::RenderTarget(Viewport* viewport_)
+        : viewport(*viewport_) {}
+
+    RenderCommand::RenderCommand(RenderTarget* target_,
+        Mesh* mesh_, Material* material_, Transform* transform_, RenderPass pass_)
+            : target(target_), pass(pass_), mesh(mesh_), material(material_), transform(transform_) {}
+
+    Renderer::Renderer(windowContext *windowCtx)
+        : m_winCtx(windowCtx) {
+
+        m_bufferTargets = bufferTargets::None;
+        bufferMasks = 0;
+
+        //Poll the amxiumum supported textures
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &m_maxTextureSlots);
+
+        //Resize the m_texcfache array to amtch MAxTextures
+        m_boundTextures.resize(m_maxTextureSlots, nullptr);
     }
 
-    // Actions all submitted render commands
-    void Renderer::flush() {
-        // Firsta ction engine level render refreshes
+    int Renderer::pollHW_MaxTexSlots() const{
+        return m_maxTextureSlots;
+    }
 
-        // Action Buffers:
-        /*
-         * Instead of manual glClearColour + glClear as this assumes the end-user knows basic GL
-         * The engine instead submits a buffer to the global var Globals::GwinMasks(GLbitfield)
-         * and the enigne then clears those buffers and resets the var so theres no stale buffer state between frames
-         * For instance, clearColour(a non-namespaced func) makes a call to glClearColor with its defined colour, then checks if GL_COLOR_BUFFER_BIT is set for clearing in the netx frame(if it exists inside Globals::GwinMasks
-         * and sets it for clearing. This way, the end-user doesnt need to worry about clearing buffers at all and buffers aren't enabled once for an entire applications lifetime
-         */
-        glClear(Globals::GwinMasks);
 
-        // Loop through renderComms looking for scene level updates
-        // E.g: viewport/window changes
-        for (auto& comm : commands) {
-            //Check viewport state and update
-            if (comm.viewportID < 0) {
-                TraceLog(LogLevel::ERROR, "[Renderer]: No viewport defined for the specified renderCommand");
-                continue;
-            }
-            /*if (comm.viewport->isDirty()) {
-                //update viewport, viewport automatically scales itself on globalr esize signal
-                glViewport(comm.viewport->x, comm.viewport->y, comm.viewport->width, comm.viewport->height);
-                // Mark clean
-                comm.viewport->dirty = false; // PROTECTED VAR -> friend in use
-            }*/
+    void Renderer::submit(const RenderCommand &cmd) {
+        //Check for unset ptr's
+        // cannot store a renderComm that is nto fully created!
+        // It means we waste CPU sorting time and require more stingent checks on each operation
+
+        // Validate renderTarget
+        if (cmd.target == nullptr) return;
+
+        //Mesh valdiation
+        if (cmd.mesh == nullptr) return;
+
+        //Material (&Shader) validation
+        if (cmd.material == nullptr) return;
+        if (cmd.material->shader == nullptr) return;
+        //Check compile status
+        if (!cmd.material->shader->isCompiled()) return;
+
+        //Transform
+        if (cmd.transform == nullptr) return;
+
+        if (cmd.pass == RenderPass::Opaque) {
+            m_OpaqueComms.push_back(cmd);
+        } else {
+            // Transparent comm
+            m_TransparentComms.push_back(cmd);
+        }
+    }
+
+    void Renderer::setClearColor(Color color, bufferTargets buffs) {
+        stateCol = color;
+
+        if (buffs != bufferTargets::None) {
+            clearBuffers(buffs);
+        }
+    }
+
+    void Renderer::clearBuffers(bufferTargets targets) {
+        if (targets == bufferTargets::None) {
+            bufferMasks = 0;
         }
 
-        // Check if there is anything to draw
-        if (commands.size() < 1) return; // Nothing to draw
+        if (hasFlag(targets, bufferTargets::Color)) bufferMasks |= GL_COLOR_BUFFER_BIT;
 
-        // Sort RenderComamnds in order of Shader
-        std::sort(commands.begin(), commands.end(),
+        if (hasFlag(targets, bufferTargets::Depth)) bufferMasks |= GL_DEPTH_BUFFER_BIT;
+
+        if (hasFlag(targets, bufferTargets::Stencil)) bufferMasks |= GL_STENCIL_BUFFER_BIT;
+
+    }
+
+
+
+
+
+
+    void Renderer::flush() {
+        //State level clear and color
+        glClearColor(stateCol.r() / 255, stateCol.g() / 255, stateCol.b() / 255, stateCol.a() / 255);
+        glClear(bufferMasks);
+
+        /*
+         *RenderTarget (Viewport, FBO's) (Perhaps need to sort by FBO independtly in the future)
+         *Shader
+         *Material
+         */
+
+        std::sort(m_OpaqueComms.begin(), m_OpaqueComms.end(),
             [](const RenderCommand& a, const RenderCommand& b) {
-                /*if (a.material.shader->ID != b.material.shader->ID) {
-                    // Return the lower shaderID first
-                    return a.material.shader->ID < b.material.shader->ID;
-                }*/
-                // Add other sort filters here
+                if (a.target != b.target)
+                    return a.target < b.target;
 
-                // default return
-                return a.material->shader->ID < b.material->shader->ID;
+                if (a.material->shader < b.material->shader)
+                    return a.target < b.target;
+
+                return a.material < b.material;
             });
 
-        // Now draw
-        for (auto& comm : commands) {
-            // validate ptr's
-            if (!comm.mesh) {
-                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Mesh. Ignoring the command!");
-                continue;
-            }
-            if (!comm.material) {
-                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Material. Ignoring the command!");
-                continue;
-            }
-            if (!comm.transform) {
-                TraceLog(LogLevel::ERROR, "[Renderer]: RenderCommand contains an invalid ptr to Transform. Ignoring the command!");
-                continue;
+        // render Opaque
+        for (const auto& com : m_OpaqueComms) {
+            //Check if the viewport has changed
+            if (com.target->viewport != m_activeViewport) {
+                m_activeViewport = com.target->viewport;
+                glViewport(m_activeViewport.x, m_activeViewport.y, m_activeViewport.w, m_activeViewport.h);
             }
 
-            //fmt::print(stderr, fg(fmt::color::blue), comm.)
-
-            //fmt::print(stderr, fg(fmt::color::green), "{}\n", glm::to_string(comm.transform->ModelMatrix()));
-            //comm.material->shader->setUniform("model", comm.transform->ModelMatrix());
-
-            if (comm.viewportID < 0) {
-                // Need to decide, if we should error and ingore the current comm if no viewport is provided
-                // If no viewport, GL jsut uses the defautl viewport created at window creation. So resizing wont apply correctly
-                TraceLog(LogLevel::WARNING, "[Renderer]: No viewport has been specified for the render comm. Rendering will fallback to default viewport");
-                // Set comm->viewport to default(0)
-                comm.viewportID = 0;
+            // Check for shader changes
+            if (m_activeShader != com.material->shader->ID) {
+                m_activeShader = com.material->shader->ID;
+                com.material->shader->bind();
             }
 
-            if (comm.material->shader->ID != m_activeShaderID) {
-                // Shader request to change programs
-                comm.material->shader->bind(); // There are already MINIMIAL safegaurds in palce to ensure that a shader that hasnt been compiled yet, cant bind (A warning is output)
-                // Update activeSahder
-                m_activeShaderID = comm.material->shader->ID;
+            //Clear batch lookup
+            m_batchLookup.clear();
+            m_nextTextureSlot = 1; // ) reserved for fallback
+
+            // Handle texture binding
+            auto& textures = com.material->getTextures();
+
+            for (auto& [samplerName, texture] : textures) {
+                int slot;
+
+                //resolve slot for this batch
+                auto it = m_batchLookup.find(texture);
+                if (it != m_batchLookup.end()) {
+                    slot = it->second;
+                } else {
+                    if (m_nextTextureSlot >= m_maxTextureSlots) {
+                        m_batchLookup.clear();
+                        m_nextTextureSlot = 1;
+                    }
+                    slot = m_nextTextureSlot++;
+                    m_batchLookup[texture] = slot;
+                }
+
+                //Bind only if needed
+                if (m_boundTextures[slot] != texture) {
+                    glActiveTexture(GL_TEXTURE0 + slot);
+                    glBindTexture(GL_TEXTURE_2D, texture->texID);
+
+                    m_boundTextures[slot] = texture;
+                }
+
+                // Set shader sampler uniform to SLOT
+                com.material->shader->setUniform(samplerName, slot); // Use raw shader.setUniform here as its state doesnt persist, unlike Material uniform setting
             }
 
-            // Eventually set Textures here (Only sets one texture, perhaps Rebnderer polls GL for max supported textures
-            // (... then Material inialiser takes renderer as param ptr and can access max supportec textures + recommended per amt max texture limit
-            // (... then back in this bit of code, we can bind and activate to each specified texture unit, perhaps use a texture unit recycler too
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, 1);
-            comm.material->shader->setUniform("tex", 1);
-
-            // Set shader uniforms (per material)
-            for (auto& pair : comm.material->getUniforms()) {
-                const auto& name = pair.first;
+            // Now set material uniforms
+            for (const auto& pair : com.material->getUniforms()) {
+                const auto& uniformName = pair.first;
                 const auto& variant = pair.second;
+
                 std::visit([&](auto&& value) {
-                    comm.material->shader->setUniform(name, value);
+                    com.material->shader->setUniform(uniformName, value);
                 }, variant);
             }
 
-            //Bind VAO and begin drawing
-            glBindVertexArray(comm.mesh->VAO);
+            //Begin drawing
 
-            if (comm.mesh->EBO != 0) {
-                // EBO in use, draw by elements
-                glDrawElements(comm.mesh->drawMode, comm.mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+
+            //bind VAO (recover mesh state)
+            glBindVertexArray(com.mesh->VAO);
+
+            // THe drawing sauce
+
+            if (com.mesh->EBO != 0) {
+                // Using indices for drawing
+                glDrawElements(com.mesh->drawMode, com.mesh->indexCount, GL_UNSIGNED_INT, nullptr);
             } else {
-                glDrawArrays(comm.mesh->drawMode, 0, comm.mesh->vertexCount);
+                // Vertex drawing mode
+                glDrawArrays(com.mesh->drawMode, 0, com.mesh->vertexCount);
             }
-
-
         }
-        // Renderering complete, clear the commands
-        commands.clear();
+        //Clear the OpaqueComms queue
+        m_OpaqueComms.clear();
+
     }
 
-    int Renderer::createViewport(int x, int y, int designWidth, int designHeight) {
-        // Check for invalid windowCtx
-        if (m_windowCtx == nullptr) {
-            TraceLog(LogLevel::FATAL, "[Renderer]: Context is out of scope! Either an invalid context were provided to the renderer on creation, or it has been manually deleted/freed");
-        }
-        const windowContext& winCtx = *m_windowCtx;
-        m_viewports.emplace_back(winCtx, x, y, designWidth, designHeight);
 
-        // Get size and return ID
-        auto count = m_viewports.size();
-        if (count == 1) {
-            TraceLog(LogLevel::STATUS, "[Renderer]: Default Viewport created: Defined as [X: {}, Y: {}, W: {}, H: {}", x, y, designWidth, designHeight);
-        }
 
-        return count;
-    }
 
 
 

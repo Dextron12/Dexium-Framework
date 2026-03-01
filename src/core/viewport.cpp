@@ -4,9 +4,17 @@
 
 #include <core/viewport.hpp>
 
-#include "core/Renderer.h"
-#include "core/windowContext.hpp"
+namespace Dexium::Core {
 
+    Viewport::Viewport() : x(0), y(0), w(0), h(0) {
+    }
+
+    Viewport::Viewport(const int& x, const int& y, const int& w, const int& h)
+        : x(x), y(y), w(w), h(h) {
+    }
+}
+
+/*
 namespace Dexium::Core {
 
     Viewport::Viewport(const windowContext& windowCtx, int xOffset, int yOffset, int viewportWidth, int viewportHeight, std::optional<std::string> viewportLabel) {
@@ -59,3 +67,5 @@ namespace Dexium::Core {
 
 
 }
+
+*/

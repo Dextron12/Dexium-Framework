@@ -125,16 +125,7 @@ void EngineState::run() {
     }
 }
 
-void clearColour(Colour colour) {
-    //Enable colour buffer if not already enabled
-    if (!(Dexium::Globals::GwinMasks & GL_COLOR_BUFFER_BIT)) {
-        // Colour buffer is not currentlys et for clearing. Enable it now
-        Dexium::Globals::GwinMasks |= GL_COLOR_BUFFER_BIT;
-    }
 
-    // Set the colour
-    glClearColor(colour.r(), colour.g(), colour.b(), colour.a());
-}
 
 void createLogger(Dexium::Core::LoggerOutput outStreams, Dexium::Core::LoggerFormat format) {
     //Fethc engine context
