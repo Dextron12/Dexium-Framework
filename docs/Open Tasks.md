@@ -3,7 +3,8 @@
 ```tasks
 path includes TODO.md
 not done
-tag does not include #debug 
+tag does not include #debug
+sort by start_date 
 sort by priority
 sort by due
 ```

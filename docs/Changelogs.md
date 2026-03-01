@@ -1,10 +1,17 @@
 ---
 
 ---
+---
+### Changelog: V0.16.8-a
 
+- Fixed a `Shader` issue, where if a shader had successfully compiled, it wouldn't update its `isCompiled` to reflect so. This prevented other systems that relied on probing a successful compilation to continue where early exiting.
+- Separated `Texture.hpp` into a proper target `.cpp` for definitions to avoid `STB_IMAGE` cross linkage issues throughout the project. Honestly not sure how I didn't run into this sooner.
+- Implemeted the `Opaque` renderer system, so any commands submitted under the opaque setting should render.
+- Observed a memory leak through KDE(System Monitor) on the process. Tried using `Valgrind` to detect the leak, but it mostly reports on GL junk and I have a suspicion the leak is not from the engine itself but the testing code to test the renderer.
+	- Opened *Bug 1* for this issue.
 ---
 
-Changelog: V).16.7-a
+### Changelog: V0.16.7-a
 -  Removed implicit global state `gwinMasks` a bit-field enum class that allowed setting aGL buffer to be cleared. 
 	- Now `clearColor` has clear responsiblities and **does not** invoke `glClear` or `glClearColor` but instead instructs the renderer to do so on `Renderer::flush()`
 	- I believe the only other global logic in existence at the moment are:
