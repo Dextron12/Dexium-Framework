@@ -6,7 +6,9 @@
 
 #include <core/windowContext.hpp>
 
-#include "Dexium.hpp"
+#include <renderer/RenderTarget.hpp>
+#include <Dexium.hpp>
+
 
 namespace Dexium::Core {
 
@@ -41,6 +43,11 @@ namespace Dexium::Core {
 
         width = windowWidth; height = windowHeight;
         baseWidth = windowWidth; baseHeight = windowHeight;
+
+        //Create default renderTarget
+        m_defRenderTarget = std::make_unique<RenderState::RenderTarget>(
+            RenderState::Viewport{0, 0, width, height}
+        );
     }
 
     windowContext::~windowContext() {
@@ -76,6 +83,14 @@ namespace Dexium::Core {
 
         // Update w & h
         width = w; height = h;
+
+        // Update default viewport
+        m_defRenderTarget->m_viewport.w = width;
+        m_defRenderTarget->m_viewport.h = height;
+    }
+
+    RenderState::RenderTarget* windowContext::getRenderTarget() const {
+        return m_defRenderTarget.get();
     }
 
 

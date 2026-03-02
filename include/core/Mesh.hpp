@@ -18,7 +18,8 @@ namespace Dexium::Core {
             Triangle,
             Rectangle,
             Circle,
-            Line
+            Line,
+            UDEF
         };
 
         enum class Mesh3D {
@@ -47,6 +48,9 @@ namespace Dexium::Core {
 
         Mesh() = default; // default constucts a mesh (Should onlyu be used for type specification purposes)
         ~Mesh() {destroy(); }
+
+        // Generates and uploads the Mesh on its provided data. Use createMesh for a default, or use this fn when creating your own mesh
+        void buildMesh(const std::function<void()>& setupAttribs = nullptr);
 
         // Tranform is no longer a part of Mesh, It would be its own entity
         // Rendering a Mesh directly is no longer possible, unless you built its own entity that commands the renderer how to do so

@@ -10,17 +10,15 @@
 #include <core/Material.hpp>
 #include <core/Transform.h>
 
-#include <core/viewport.hpp>
+#include <../../include/renderer/viewport.hpp>
 #include <core/windowContext.hpp>
 
 #include "core/Texture.hpp"
 
 namespace Dexium::Core {
 
-    RenderTarget::RenderTarget(Viewport* viewport_)
-        : viewport(*viewport_) {}
 
-    RenderCommand::RenderCommand(RenderTarget* target_,
+    RenderCommand::RenderCommand(RenderState::RenderTarget* target_,
         Mesh* mesh_, Material* material_, Transform* transform_, RenderPass pass_)
             : target(target_), pass(pass_), mesh(mesh_), material(material_), transform(transform_) {}
 
@@ -121,8 +119,8 @@ namespace Dexium::Core {
         // render Opaque
         for (const auto& com : m_OpaqueComms) {
             //Check if the viewport has changed
-            if (com.target->viewport != m_activeViewport) {
-                m_activeViewport = com.target->viewport;
+            if (com.target->m_viewport != m_activeViewport) {
+                m_activeViewport = com.target->m_viewport;
                 glViewport(m_activeViewport.x, m_activeViewport.y, m_activeViewport.w, m_activeViewport.h);
             }
 

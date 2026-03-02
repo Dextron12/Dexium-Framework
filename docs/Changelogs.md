@@ -2,6 +2,25 @@
 
 ---
 ---
+### Changelog: V0.16.9-a
+
+**IMPORTANT**: This version has introduced `u_scale` and `u_offset` into the shader pipeline for 2D rendering. So we cans till keep our mesh's in `NDC` space, so that its compatible for 3aD meshes, but when we try to sue NDC meshes in a Ortho projection, it is muliplied to an oblivian and we'd be lucky to see a single pixel without these uniforms.
+
+For 2D:
+```
+u_scale.x = windowWidth / 2;
+u_scale.y = windowHeight / 2;
+
+u_offset.x = u_scale.x, u_scale.y;
+```
+
+For 3D:
+```
+u_scale(1,1);
+u_offset(0,0);
+```
+
+---
 ### Changelog: V0.16.8-a
 
 - Fixed a `Shader` issue, where if a shader had successfully compiled, it wouldn't update its `isCompiled` to reflect so. This prevented other systems that relied on probing a successful compilation to continue where early exiting.

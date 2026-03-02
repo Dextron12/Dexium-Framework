@@ -23,6 +23,11 @@
 
 #include <string>
 
+//Forward declare for RenderTarget
+namespace Dexium::RenderState {
+    class RenderTarget;
+}
+
 
 // This is  SPECIAL namespace that will store ALL global signals
 namespace Dexium::Globals::Signals {
@@ -91,12 +96,16 @@ namespace Dexium::Core {
         void startFrame();
         void endFrame();
 
+        RenderState::RenderTarget* getRenderTarget() const;
+
         // engine internally emits sig_onResize
         static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
     private:
         glfwInitializer* m_glfw_ = nullptr;
         GLADInitializer* m_glad_ = nullptr;
+
+        std::unique_ptr<RenderState::RenderTarget> m_defRenderTarget;
 
         void onFrameBufferResize(int w, int h);
     };

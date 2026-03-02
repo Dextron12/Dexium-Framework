@@ -9,12 +9,10 @@
 #ifndef DEXIUM_VIEWPORT_HPP
 #define DEXIUM_VIEWPORT_HPP
 
-namespace Dexium::Core {
-    class Renderer;
-}
 
 
-namespace Dexium::Core {
+
+namespace Dexium::RenderState {
 
     class Viewport {
     public:

@@ -150,4 +150,13 @@ void createLogger(Dexium::Core::LoggerOutput outStreams, Dexium::Core::LoggerFor
 }
 
 
+Dexium::RenderState::RenderTarget* createDefaultRenderTarget() {
+    //Grab engine context
+    auto& ctx = EngineState::get();
+
+    //WindowCtx created a default viewport on creation,a ccess and return it
+    return ctx.getWindowContext().getRenderTarget();
+}
+
+
 

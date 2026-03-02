@@ -9,12 +9,14 @@
 #include <core/windowContext.hpp>
 #include <core/Layers.hpp>
 #include <core/VFS.hpp>
-#include <core/Colour.h>
 
 #include <core/Shader.hpp>
 #include <core/Mesh.hpp>
 
 #include <core/Camera.hpp>
+
+#include <renderer/viewport.hpp>
+#include <renderer/RenderTarget.hpp>
 
 
 
@@ -45,6 +47,8 @@ public:
 
     // Layer management
     static void addLayer(const std::string& layerID, std::unique_ptr<Dexium::Core::AppState> layer);
+
+    Dexium::RenderState::Viewport* getDefaultViewport();
 
     // Logger Sub-system. Create a new logger with createLogger()
     std::unique_ptr<Dexium::Core::Logger> logger; // If no logger is present in debug build a panic msg will be printed before supression, otherwise in REL builds logs will automatically be suppressed
@@ -79,7 +83,5 @@ void clearColour(Colour colour);
 // format dictates the style, features and colour that the logs are output in
 // These define the state level operations of the Logger, but can also be indvidually overriden per log
 void createLogger(Dexium::Core::LoggerOutput outputStreams, Dexium::Core::LoggerFormat format);
-
-
 
 #endif

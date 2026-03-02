@@ -31,6 +31,9 @@ namespace Dexium::Core {
                 vertices = MeshData::quadVertices;
                 indices = MeshData::quadIndices;
                 break;
+            case MeshType::Mesh2D::UDEF:
+                // User is providng their own vertices/indices
+                break;
             default:
                 TraceLog(LogLevel::WARNING, "[Mesh]: Unsupported mesh type requested to generate");
                 break;
@@ -44,6 +47,65 @@ namespace Dexium::Core {
     void Mesh::generateMesh(MeshType::Mesh3D type) {
         TraceLog(LogLevel::WARNING, "[Mesh]: Hold ya horsies!! Dexium is still in experimental 2D and therefore no 3D meshes exist yet!");
     }
+
+    void Mesh::buildMesh(const std::function<void()>& setupAttribs) {
+        if (vertices.size() == 0) {
+            TraceLog(LogLevel::ERROR, "[Mesh]: No vertices provided on custom profile");
+            return;
+        }
+        if (vertexCount == 0) {
+            TraceLog(LogLevel::ERROR, "[Mesh]: vertices provided, but no count on custom profile");
+            return;
+        }
+        //Can still build a mesh without indices, just dont sue EBO
+
+        // Generate & bind VAO
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        // Generate & bind VBO
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        // Uplaod buffer data
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), usageHint);
+
+        // Generate an EBO if provided
+        if (indices.size() > 0) {
+            glGenBuffers(1, &EBO);
+        }
+
+        // Uplaod EBO
+        if (usingEBO()) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), indices.data(), usageHint);
+        }
+
+        // WARNING: THIS FN IS ALSO USED FOR CUSTOM MESHES, CANNOT OUTPUT A NY LOGS THOUGH AS THE PRE-GENERATED MESHES ALSO USE THIS FN
+        // SO IT IS ENTIRELY UP TO THE END-USER TO ENSURE THEY ARE CORRECTLY CONFIGURING THESE ATTRIBS
+        // IF NO ATTRIBS (setupAttribs) ARE PROVIDED, WE WILL USE THE DEFAULT:
+        // Position (vert 3) attrib 0
+        // UVs (vert 2) attrib 1
+        // In this default case, vertice data should be 5 comps long per vertex. So for a single triangle under this default, the vertices should be 3*5=15 in size
+
+        if (setupAttribs) {
+            setupAttribs();
+        } else {
+            // Use defaults
+            // Pos (0-3)
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            // UVs (4-5)
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+        }
+
+        // Unbind buffers to prevent unintended editing
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
 
 
     // The creme de la creme

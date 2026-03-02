@@ -16,8 +16,8 @@ namespace Dexium::Core {
         glm::vec3 scale;
 
         Transform() = default;
-        Transform(glm::vec3 pos, glm::vec3 rot = {0.f, 0.f, 0.f}, glm::vec3 scale = {1.f, 1.f, 1.f})
-            :position(pos), rotation(rot), scale(scale) {}
+        explicit Transform(glm::vec3 pos, glm::vec3 rot = {0.f, 0.f, 0.f}, glm::vec3 scale = glm::vec3(1.0f))
+            :position(pos), rotation(rot), scale(scale){}
 
         // Returns a glm::mat4 model matrix of this transform(pos + rot + scale)
         glm::mat4 ModelMatrix();

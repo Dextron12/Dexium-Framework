@@ -8,7 +8,7 @@
 #include <core/Colour.h>
 #include <core/BitwiseFlag.hpp>
 
-#include <core/viewport.hpp>
+#include <renderer/RenderTarget.hpp>
 
 #include "glad/gl.h"
 
@@ -52,16 +52,9 @@ namespace Dexium::Core {
 
 
 
-    // dictates the target (FBO, viewport, camera)
-    struct RenderTarget {
-
-        Viewport viewport;
-
-        RenderTarget(Viewport* viewport_); // Need to define this in src (where  IDHandle is fully declared)
-    };
 
     struct RenderCommand {
-        RenderTarget* target;
+        RenderState::RenderTarget* target;
         RenderPass pass;
 
         Mesh* mesh;
@@ -69,7 +62,7 @@ namespace Dexium::Core {
 
         Transform* transform;
 
-        RenderCommand(RenderTarget* target, Mesh* mesh, Material* material, Transform* transform, RenderPass pass = RenderPass::Opaque);
+        RenderCommand(RenderState::RenderTarget* target, Mesh* mesh, Material* material, Transform* transform, RenderPass pass = RenderPass::Opaque);
     };
 
     class Renderer {
@@ -153,7 +146,7 @@ namespace Dexium::Core {
         std::unordered_map<Texture*, int> m_batchLookup; // Storres the lookups of textures (Stored per batch/drawCall)
 
         //Store active viewport
-        Viewport m_activeViewport = {};
+        RenderState::Viewport m_activeViewport = {};
         //Store active shader
         int m_activeShader = 0;
         //Store next texture slot
