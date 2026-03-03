@@ -45,7 +45,7 @@ namespace Dexium::Core {
         }
 
         ~glfwInitializer() {
-            //glfwTerminate();
+            glfwTerminate();
         }
 
         void init() {

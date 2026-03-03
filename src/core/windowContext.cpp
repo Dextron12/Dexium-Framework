@@ -53,6 +53,7 @@ namespace Dexium::Core {
     windowContext::~windowContext() {
         // Manually destroung the window with glfwDestroyWindow() results in an internal
         // double free of glState and causes glTerminate() to throw a segfault
+        glfwDestroyWindow(window);
     }
 
     void windowContext::startFrame() {
