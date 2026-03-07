@@ -18,10 +18,6 @@ file (GLOB_RECURSE DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 # --- FMT Inclusion (For CXX20 Print + Colours) --> Core Module
 add_subdirectory(third_party/fmt)
 
-# --- EnTT Inclusion (Extensively used throughout Dexium) --> ID system
-add_library(entt INTERFACE)
-target_include_directories(entt INTERFACE third_party/entt/src) # Header only lib
-
 # --- STB_Image Inclusion (Used for loading images into Dexium)
 add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE third_party/STB/) # Header only
@@ -86,7 +82,6 @@ endif()
 target_link_libraries(Dexium
     PUBLIC fmt_vendor
     PUBLIC ${DEXIUM_PLATFORM_LIBS} # defined in platform specific CMakeLists(projectConfig) and brings in paltform specific libs
-    PUBLIC entt
     PUBLIC stb_image
 )
 
