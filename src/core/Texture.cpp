@@ -10,6 +10,8 @@
 #include <core/VFS.hpp>
 #include <core/Error.hpp>
 
+#include <glad/gl.h> // Not sure what donkey defined this in the header ;{, so to any future donkeys... keep it here!!
+
 Dexium::Core::Texture::~Texture() {
     if (texID != 0) {
         // glDeleteTextures(1, &texID); // Currently causes a segfault

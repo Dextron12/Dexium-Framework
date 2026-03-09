@@ -22,7 +22,7 @@ namespace Dexium::Core {
 
     class Texture;
 
-    class windowContext;
+    class WindowContext;
 
 
     // Bitwise flag enum for the different buffers
@@ -67,7 +67,7 @@ namespace Dexium::Core {
 
     class Renderer {
     public:
-        Renderer(windowContext* windowCtx);
+        Renderer(WindowContext* windowCtx);
 
         // Make Renderer non-copyable BUT movable.
         // Movable renderer is needed becasue AppLayer ustes std::move, meaning all variables scoped within it also msut be movable
@@ -130,7 +130,7 @@ namespace Dexium::Core {
         void clearBuffers(bufferTargets targets);
 
     private:
-        windowContext* m_winCtx; // Non-owning ptr, very unlikely to be derefrenced before the renderer
+        WindowContext* m_winCtx; // Non-owning ptr, very unlikely to be derefrenced before the renderer
 
         //Stores the render comm submissions (Cleared after each frame)
         std::vector<RenderCommand> m_OpaqueComms;

@@ -1,34 +1,32 @@
 //
-// Created by Dextron12 on 10/12/25.
+// Created by Dextron12 on 03/03/26.
 //
 
-#ifndef DEXIUM_CAMERA_H
-#define DEXIUM_CAMERA_H
+#ifndef DEXIUM_CAMERA_HPP
+#define DEXIUM_CAMERA_HPP
+
+
+#include <core/Transform.h>
 
 #include <glm/glm.hpp>
 
 namespace Dexium::Core {
 
-    enum class ProjectionType {
-        PERSPECTIVE, // 3D
-        ORTHOGRAPHIC, // 2D
-    };
-
-    class Camera {
+    class baseCamera : public Transform {
     public:
-        Camera(ProjectionType projection);
+        baseCamera() : viewMatrix(glm::mat4(1.0f)), projectionMatrix(glm::mat4(1.0f)) {}
 
-        void setProjection(ProjectionType proj, int scrWidth, int scrHeight, float zNear = 0.1f, float zFar = 50.0f);
+        virtual const glm::mat4& getViewMatrix();
+        virtual const glm::mat4& getProjectionMatrix();
 
-        const glm::mat4& getProjection() const;
-
-        ProjectionType projType;
+        virtual ~baseCamera();
 
     private:
-        glm::mat4 projection;
-        glm::vec2 windowSize;
+        glm::mat4 viewMatrix;
+        glm::mat4 projectionMatrix;
+
     };
+
 }
 
-
-#endif //DEXIUM_CAMERA_H
+#endif

@@ -5,6 +5,7 @@
 #include <core/Camera.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
+/*
 namespace Dexium::Core {
 
     Camera::Camera(ProjectionType proj) {
@@ -35,3 +36,4 @@ namespace Dexium::Core {
 
 
 }
+*/

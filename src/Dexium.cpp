@@ -3,11 +3,13 @@
 //
 
 #include "Dexium.hpp"
+#include <core/windowContext.hpp>
+
+#include "core/Input.hpp"
 
 EngineState::EngineState() {
     //Init GLFW
-    glfwInit = std::make_unique<Dexium::Core::glfwInitializer>();
-    glfwInit->init();
+    glfwInit = std::make_unique<Dexium::Initializers::glfwInitializer>();
 
     m_appState = true; // Checks after this ln will determine if app runs
 
@@ -28,18 +30,18 @@ void EngineState::init() {
 }
 
 void EngineState::shutdown() {
-    get().glfwInit = nullptr;
+    get().m_appState = false;
 }
 
 void EngineState::attachWindow(const std::string &windowTitle, int windowWidth, int windowHeight) {
-    get().windowContext = std::make_unique<Dexium::Core::windowContext>(windowTitle, windowWidth, windowHeight, get().glfwInit.get(), nullptr);
+    get().windowContext = std::make_unique<Dexium::Core::WindowContext>(windowTitle, windowWidth, windowHeight, Dexium::Core::WindowHints{});
 }
 
 void EngineState::detachWindow() {
     get().windowContext = nullptr;
 }
 
-Dexium::Core::windowContext& EngineState::getWindowContext() {
+Dexium::Core::WindowContext& EngineState::getWindowContext() {
     return *get().windowContext;
 }
 
@@ -55,7 +57,7 @@ void EngineState::addLayer(const std::string &layerID, std::unique_ptr<Dexium::C
             ctx.m_layers[layerID]->RequestPause(); // Counter-intuitavie, but intrnally activates/pauses the state
         }
     } else {
-        std::cout << "Layer already exists" << std::endl;
+        TraceLog(LogLevel::WARNING, "[Engine::AddLayer]: Layer already exists, ignoring this one");
     }
 }
 
@@ -65,26 +67,33 @@ void EngineState::run() {
     auto& ctx = get();
 
     if (!ctx.glfwInit->isValid()) {
-        std::cout << "NO GLFW context initalised" << std::endl;
+        TraceLog(LogLevel::FATAL, "[Engine]: No GLFW context initialized");
         ctx.m_appState = false;
     }
 
     if (!ctx.windowContext) {
-        std::cout << "NO Window context initalised" << std::endl;
+        TraceLog(LogLevel::WARNING, "[Engine]: No Window context has been initialized");
         ctx.m_appState = false;
     }
 
     while (ctx.m_appState) {
 
+        //startFrame here
+        //ctx.getWindowContext()
+        ctx.getWindowContext().getInput().update();
+        ctx.getWindowContext().pollEvents();
 
-        ctx.windowContext->startFrame();
+        //Check if window (EXIT button) has been pressed
+        if (glfwWindowShouldClose(ctx.getWindowContext().getWindow())) {
+            ctx.m_appState = false;
+        }
 
         // Execute layers
         for (auto it = ctx.m_activeLayers.begin(); it != ctx.m_activeLayers.end(); ) {
             auto layer = ctx.m_layers.find(*it);
             if (layer == ctx.m_layers.end()) {
                 // The stored ID has been removed elsewhere! WARN: and remove ID
-                std::cout << "Layer not found" << std::endl;
+                TraceLog(LogLevel::WARNING, "[Engine]: Layer {} not found", layer->first);
                 ctx.m_activeLayers.erase(it);
             }
 
@@ -121,7 +130,9 @@ void EngineState::run() {
 
         }
 
-        ctx.windowContext->endFrame();
+        //enFrame context
+        ctx.getWindowContext().swapBuffers();
+        //ctx.windowContext->endFrame();
     }
 }
 
@@ -155,7 +166,7 @@ Dexium::RenderState::RenderTarget* createDefaultRenderTarget() {
     auto& ctx = EngineState::get();
 
     //WindowCtx created a default viewport on creation,a ccess and return it
-    return ctx.getWindowContext().getRenderTarget();
+    return &ctx.getWindowContext().getRenderTarget();
 }
 
 

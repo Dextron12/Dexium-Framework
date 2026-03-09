@@ -88,7 +88,7 @@ namespace Dexium::Core {
         auto abs = (m_execPath / path).lexically_normal();
         if (std::filesystem::exists(abs)) return abs;
         else {
-            TraceLog(LogLevel::ERROR, "[VFS]: Identified '{}' has a relative path, attempted to resolve from virtual_path into: {}, but, the abs path is not valid", path.string(), abs.string());
+            TraceLog(LogLevel::ERROR, "[VFS]: Identified '{}' as a relative path, attempted to resolve from virtual_path into: {}, but, the abs path is not valid", path.string(), abs.string());
         }
 
         return {}; // Failed tor eoslve for some reason or the other

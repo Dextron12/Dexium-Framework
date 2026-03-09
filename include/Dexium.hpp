@@ -6,7 +6,6 @@
 #include <core/Error.hpp> // Provides TraceLog and Logging features
 #include <core/Colour.h> // Provies Colour
 
-#include <core/windowContext.hpp>
 #include <core/Layers.hpp>
 #include <core/VFS.hpp>
 
@@ -25,12 +24,15 @@
 #include <vector>
 
 #include "core/Renderer.hpp"
+#include "core/windowContext.hpp"
 
 using Shader = Dexium::Core::Shader;
-using Camera = Dexium::Core::Camera;
 using VFS = Dexium::Core::VFS;
 using Material = Dexium::Core::Material;
 using Renderer = Dexium::Core::Renderer;
+
+using GameLayer = Dexium::Core::AppState;
+using AppLayer = Dexium::Core::AppState;
 
 class EngineState {
 public:
@@ -43,7 +45,7 @@ public:
     // Window lifetime management
     static void attachWindow(const std::string& windowTitle, int windowWidth, int windowHeight);
     static void detachWindow();
-    static Dexium::Core::windowContext& getWindowContext();
+    static Dexium::Core::WindowContext& getWindowContext();
 
     // Layer management
     static void addLayer(const std::string& layerID, std::unique_ptr<Dexium::Core::AppState> layer);
@@ -55,9 +57,6 @@ public:
 private:
     EngineState();
     ~EngineState() = default;
-
-    // Friend WindowContext (Engine Internal WIndow Manager)
-    friend class Dexium::Core::windowContext;
 
     // Prevent copying
     EngineState(const EngineState&) = delete;
@@ -71,9 +70,9 @@ private:
     // Complex storage types
     std::unordered_map<std::string, std::unique_ptr<Dexium::Core::AppState>> m_layers;
 
-    std::unique_ptr<Dexium::Core::windowContext> windowContext;
+    std::unique_ptr<Dexium::Core::WindowContext> windowContext;
 
-    std::unique_ptr<Dexium::Core::glfwInitializer> glfwInit;
+    std::unique_ptr<Dexium::Initializers::glfwInitializer> glfwInit;
 
 };
 

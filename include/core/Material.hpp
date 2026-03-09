@@ -5,9 +5,6 @@
 #ifndef DEXIUM_MATERIAL_HPP
 #define DEXIUM_MATERIAL_HPP
 
-// Used for hashed string ID's
-#include <entt/core/hashed_string.hpp>
-
 // Core headers
 #include <core/Shader.hpp>
 
@@ -28,7 +25,7 @@ namespace Dexium::Core {
         template<typename T, typename... Ts>
         struct variant_contains<T, std::variant<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
 
-        entt::id_type ID;
+        //entt::id_type ID;
 
         // Shader program
         Shader* shader = nullptr;

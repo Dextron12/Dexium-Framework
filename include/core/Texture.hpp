@@ -5,8 +5,6 @@
 #ifndef DEXIUM_TEXTURE_HPP
 #define DEXIUM_TEXTURE_HPP
 
-#include <glad/gl.h>
-
 #include <core/BitwiseFlag.hpp>
 
 #include <filesystem>
@@ -39,7 +37,7 @@ namespace Dexium::Core {
 
     class Texture {
     public:
-        GLuint texID = 0;
+        unsigned int texID = 0;
         TexFlags flags = TexFlags::None;
 
         int width = 0, height = 0, nrChannels = 0;

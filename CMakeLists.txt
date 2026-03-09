@@ -5,11 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_CXX_FLAGS_DEBUG, "$CMAKE_CXX_FLAGS_DEBUG} -g -O0")
+
 # --- Configureable options ---
 option(DEXIUM_USE_ImGui "Enable Dear ImGui(docking) integration" OFF)
 
 # Specify the filename inside Tests to build as the test application
-set(DEXIUM_LIVE_TEST "textureComm.cpp" CACHE STRING "Filename inside Tests/ to compile as the live test")
+set(DEXIUM_LIVE_TEST "Sprite.cpp" CACHE STRING "Filename inside Tests/ to compile as the live test")
 
 # --- Collect Project sources ---
 file(GLOB_RECURSE DEXIUM_SRC CONFIGURE_DEPENDS src/*.cpp)

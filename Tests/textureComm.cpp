@@ -10,6 +10,7 @@
 #include <chrono>
 
 #include "core/Transform.h"
+#include <core/Input.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -35,27 +36,33 @@ class Game : public Dexium::Core::GameLayer {
 
     Game()
         : ctx(EngineState::get())
-        , renderer(&ctx.getWindowContext()) {}
+        , renderer(&ctx.getWindowContext())
+        , shader("Shaders/basic.vert", "Shaders/basic.frag"){}
 
     Shader shader;
     Dexium::Core::Mesh mesh;
     Dexium::Core::Texture tex;
     Dexium::Core::Material mat;
     Dexium::Core::Transform pos{
-    glm::vec3(-80.f, 205.f, 0.f),
+    glm::vec3(0.f, 205.f, 0.f),
     glm::vec3(0,0,0),
     glm::vec3(4.f, 2.f, 1.f)};
 
-    Dexium::RenderState::Viewport viewport;//(ctx.getWindowContext(), 0, 0, 1080, 720);
-    Dexium::RenderState::RenderTarget* target;
+    Dexium::Core::Mesh mesh1;
+    Dexium::Core::Texture tex1;
+    Dexium::Core::Material mat1;
+    Dexium::Core::Transform pos1{
+    glm::vec3 (0, -15, 0),
+    glm::vec3(0.f),
+    glm::vec3(1.f)};
 
     Dexium::Utils::MonoClock mc;
 
     void onInit() override {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        viewport = Dexium::RenderState::Viewport( 0, 0, ctx.getWindowContext().width, ctx.getWindowContext().height);
+        //viewport = Dexium::RenderState::Viewport( 0, 0, ctx.getWindowContext().width, ctx.getWindowContext().height);
 
         //clearColour(Colour::fromBytes(59, 59, 59, 255));
         renderer.setClearColor({59, 59, 59, 255}, Dexium::Core::bufferTargets::Color);
@@ -64,6 +71,7 @@ class Game : public Dexium::Core::GameLayer {
         shader = Shader("Shaders/basic.vert", "Shaders/basic.frag");
         shader.compile();
         mat.shader = &shader;
+        mat1.shader = &shader;
 
         // Renderer is now respnosible for shader binds
         //shader.bind();
@@ -92,7 +100,11 @@ class Game : public Dexium::Core::GameLayer {
 
         tex.flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Repeat | Dexium::Core::TexFlags::Mipmaps;
         tex.load("Cute_Fantasy/Buildings/Buildings/Houses/Limestone/House_2_Limestone_Base_Black.png");
+        mat.setTexture("uTexture", &tex);
 
+        tex1.flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Repeat;
+        tex1.load("Cute_Fantasy/Outdoor decoration/Boat.png");
+        mat1.setTexture("uTexture", &tex1);
 
         mesh = Dexium::Core::Mesh();
         mesh.vertices = {
@@ -114,8 +126,27 @@ class Game : public Dexium::Core::GameLayer {
         mesh.indices = indices;
         */
 
+        mesh1 = Dexium::Core::Mesh();
+        mesh1.vertices = {
+            // Pos                                          // UVs
+            0.0f, 0.0f, 0.0f,                               0.f ,1.f,
+            float(tex1.width), 0.f, 0.0f,                    1.f, 1.f,
+            float(tex1.width), float(tex1.height), 0.0f,      1.f, 0.f,
+            0.f, float(tex1.height), 0.f,                    0.f, 0.f
+        };
+        mesh1.vertexCount = 4;
+        mesh1.indices = {
+            0, 1, 2,
+            2, 3, 0
+        };
+        mesh1.indexCount = 6;
+        mesh1.buildMesh();
+
         mat.setUniform("u_Model", pos.ModelMatrix());
         mat.setUniform("u_Projection", projection);
+
+        mat1.setUniform("u_Model", pos1.ModelMatrix());
+        mat1.setUniform("u_Projection", projection);
 
         fmt::print(stderr, "Projection Matrix: {}\n", glm::to_string(projection));
         fmt::print(stderr, "Model Matrix: {}\n", glm::to_string(pos.ModelMatrix()));
@@ -136,13 +167,23 @@ class Game : public Dexium::Core::GameLayer {
 
     void onUpdate() override {
 
+        /*
         if (glfwGetKey(ctx.getWindowContext().window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(ctx.getWindowContext().window, GLFW_TRUE);
         }
+        */
+
+
 
         mc.update();
 
-        if (glfwGetKey(ctx.getWindowContext().window, GLFW_KEY_P) == GLFW_PRESS) {
+        auto& inp = ctx.getWindowContext().getInput();
+
+        if (inp.isKeyDown(GLFW_KEY_ESCAPE)) {
+            glfwSetWindowShouldClose(ctx.getWindowContext().getWindow(), GLFW_TRUE);
+        }
+
+        if (glfwGetKey(ctx.getWindowContext().getWindow(), GLFW_KEY_P) == GLFW_PRESS) {
             TraceLog(LogLevel::DEBUG, "Duration since last frame: {}", mc.delta());
         }
     }
@@ -150,11 +191,19 @@ class Game : public Dexium::Core::GameLayer {
     void onRender() override {
 
         Dexium::Core::RenderCommand comm(
-            ctx.getWindowContext().getRenderTarget()
+            &ctx.getWindowContext().getRenderTarget()
             , &mesh
             , &mat
             , &pos);
         renderer.submit(comm);
+
+
+        renderer.submit(Dexium::Core::RenderCommand(
+            &ctx.getWindowContext().getRenderTarget()
+            , &mesh1
+            , &mat1
+            , &pos1
+            ));
 
         //Stop Drawing(Deferred renderer, if manually drawing with GL, draw after this func call)
         renderer.flush();
