@@ -32,7 +32,7 @@ if (DEXIUM_LIVE_TEST)
     set(LIVE_TEST_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Tests/${DEXIUM_LIVE_TEST}")
 
     if (NOT EXISTS "${LIVE_TEST_FILE}")
-        message(FATAL_ERROR "DEXIUM_LIVE_TEST set to '${DEXIUM_LIVE_TEST}, but file not found!")
+        message(FATAL_ERROR "DEXIUM_LIVE_TEST set to '${CMAKE_CURRENT_SOURCE_DIR}/Tests/${DEXIUM_LIVE_TEST}', but file not found!")
     endif()
 
     # Automatically name the exec after the filename
