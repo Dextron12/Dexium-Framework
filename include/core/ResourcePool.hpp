@@ -1,0 +1,8 @@
+//
+// Created by ethan on 14/3/26.
+//
+
+#ifndef DEXIUM_RESOURCEPOOL_HPP
+#define DEXIUM_RESOURCEPOOL_HPP
+
+#endif //DEXIUM_RESOURCEPOOL_HPP
