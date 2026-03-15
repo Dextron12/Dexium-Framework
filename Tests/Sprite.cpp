@@ -5,6 +5,8 @@
 #include <core/Material.hpp>
 #include <core/Texture.hpp>
 
+#include <core/ResourcePool.hpp>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 void printMat4x4(const glm::mat4& mat);
@@ -21,6 +23,14 @@ public:
     Dexium::Core::Material mat;
     Dexium::Core::Transform transform;
 
+    Dexium::Core::ResourceManager rm;
+    Dexium::Core::ResourceHandle<Dexium::Core::Shader> resShader;
+    Dexium::Core::ResourceHandle<Dexium::Core::Mesh> resMesh;
+    Dexium::Core::ResourceHandle<Dexium::Core::Material> resMat;
+    Dexium::Core::ResourceHandle<Dexium::Core::Texture> resTex;
+    Dexium::Core::Transform resTrans;
+
+
     Game ()
         : ctx(EngineState::get())
     , window(ctx.getWindowContext())
@@ -31,18 +41,39 @@ public:
         shader.compile();
         mat.shader = &shader;
 
+        resMat = rm.store(std::make_unique<Dexium::Core::Material>());
+        rm.get(resMat)->shader = &shader;
+
+        //auto meshHandle = rm.store<Dexium::Core::Mesh>(Dexium::Core::createMesh(Dexium::Core::MeshType::Mesh2D::Rectangle));
+        resShader = rm.store<Dexium::Core::Shader>(std::make_unique<Shader>("", "", false));
+        rm.get(resShader)->compile();
+
+        resMesh = rm.store(Dexium::Core::createMesh(Dexium::Core::MeshType::Mesh2D::Rectangle));
+        rm.get(resMesh)->buildMesh();
+
         //Set Transform
         transform.position = glm::vec3(250.f, 250.f, 0.f);
         transform.scale = glm::vec3(1.f);
         transform.rotation = glm::vec3(0.f, 0.f, 65.f);
+
+        resTrans.position = glm::vec3(400.f, 200.f, 0.f);
+        resTrans.scale = glm::vec3(1.f);
+        resTrans.rotation = glm::vec3(0.f);
 
         //Set Texture filters
         tex.flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Linear;
         tex.load("Cute_Fantasy/Buildings/Buildings/Houses/Limestone/House_2_Limestone_Base_Black.png");
         mat.setTexture("uTexture", &tex);
 
+        resTex = rm.store(std::make_unique<Dexium::Core::Texture>());
+        rm.get(resTex)->flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Repeat;
+        rm.get(resTex)->load("Cute_Fantasy/Outdoor decoration/Well.png");
+        rm.get(resMat)->setTexture("uTexture", rm.get(resTex));
+
         //Scale model to texture size
         transform.scale = glm::vec3(tex.width, tex.height, 0.f);
+
+        resTrans.scale = glm::vec3(rm.get(resTex)->width, rm.get(resTex)->height, 0.f) * 4.f;
 
         //Create Mesh
         mesh = Dexium::Core::Mesh();
@@ -65,6 +96,9 @@ public:
 
         mat.setUniform("u_Model", transform.ModelMatrix());
         mat.setUniform("u_Projection", proj);
+
+        rm.get(resMat)->setUniform("u_Model", resTrans.ModelMatrix());
+        rm.get(resMat)->setUniform("u_Projection", proj);
 
         TraceLog(LogLevel::STATUS, "Begin output of Model Matrix (4x4)");
         printMat4x4(transform.ModelMatrix());
@@ -90,6 +124,13 @@ public:
         &mesh,
         &mat,
         &transform,
+        Dexium::Core::RenderPass::Transparent});
+
+        renderer.submit({
+        &window.getRenderTarget(),
+        rm.get(resMesh),
+        rm.get(resMat),
+        &resTrans,
         Dexium::Core::RenderPass::Transparent});
 
         renderer.flush();
