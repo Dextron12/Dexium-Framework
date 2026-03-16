@@ -82,10 +82,10 @@ namespace Dexium::Core {
 namespace Dexium::MeshData {
         inline std::vector<float> quadVertices {
             // x,     y,       z,        u,    v
-            0.5f,   0.5f,   0.0f,       1.0f, 1.0f,        // top right
-            0.5f,   -0.5f,  0.0f,       1.0f, 0.0f,       // bottom right
-            -0.5f,  -0.5f,  0.0f,       0.0f, 0.0f,
-            -0.5f,  0.5f,   0.0f,       0.0f, 1.0f
+            0.f,   0.f,    0.f,       0.0f, 1.0f,        // top right
+            1.f,   0.f,    0.f,       1.0f, 1.0f,       // bottom right
+            1.f,   1.f,    0.0f,      1.0f, 0.0f,
+            0.f,   1.0f,   0.0f,      0.0f, 0.0f
 
         };
 
