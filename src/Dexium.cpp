@@ -169,5 +169,12 @@ Dexium::RenderState::RenderTarget* createDefaultRenderTarget() {
     return &ctx.getWindowContext().getRenderTarget();
 }
 
+Dexium::RenderState::Viewport* EngineState::getDefaultViewport() {
+    // Really sia  bit of a hack!!
+    // windowCOntext holds the default renderTarget and viewport for that window.
+    // If were to implement multiple simultaneous windows, there needs to eb some way to differentiate which window is being used and polled for its viewport
+    return &get().windowContext->getRenderTarget().m_viewport;
+}
+
 
 
