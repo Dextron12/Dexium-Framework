@@ -76,6 +76,7 @@ namespace Dexium::Core {
     }
 
     void Renderer::clearBuffers(bufferTargets targets) {
+        //Renderer::Flush clears the actual GL buffers.
         if (targets == bufferTargets::None) {
             bufferMasks = 0;
         }
@@ -176,6 +177,11 @@ namespace Dexium::Core {
                 // Set shader sampler uniform to SLOT
                 com.material->shader->setUniform(samplerName, slot); // Use raw shader.setUniform here as its state doesnt persist, unlike Material uniform setting
             }
+
+            // Set MVP (Model, View, Projection matrices)
+            //Currently no Camera system exists and no View matrix.
+            // However, a Camera could bring its own Proj + View & we already have Model from the Transform attrib
+            //com.material->shader->setUniform("U_Projection", com.target->m_viewport.)
 
             // Now set material uniforms
             for (const auto& pair : com.material->getUniforms()) {

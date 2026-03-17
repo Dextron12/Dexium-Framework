@@ -10,21 +10,34 @@
 
 #include <glm/glm.hpp>
 
+namespace Dexium::RenderState {
+    class Viewport;
+}
+
 namespace Dexium::Core {
 
-    class baseCamera : public Transform {
+    class baseCamera {
     public:
         baseCamera() : viewMatrix(glm::mat4(1.0f)), projectionMatrix(glm::mat4(1.0f)) {}
 
-        virtual const glm::mat4& getViewMatrix();
-        virtual const glm::mat4& getProjectionMatrix();
+        const glm::mat4& getViewMatrix();
+        const glm::mat4& getProjectionMatrix();
 
-        virtual ~baseCamera();
+        virtual ~baseCamera() = default;
 
-    private:
+        Transform transform;
+
+    protected:
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
 
+    };
+
+    class Camera2D : public baseCamera {
+        public:
+            Camera2D(RenderState::Viewport* viewport = nullptr);
+
+            void update(RenderState::Viewport* viewport); // Updates the View matrix from the transform data
     };
 
 }

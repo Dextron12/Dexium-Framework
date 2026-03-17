@@ -4,6 +4,7 @@
 #include "core/Input.hpp"
 #include <core/Material.hpp>
 #include <core/Texture.hpp>
+#include <core/Camera.hpp>
 
 #include <core/ResourcePool.hpp>
 
@@ -30,11 +31,15 @@ public:
     Dexium::Core::ResourceHandle<Dexium::Core::Texture> resTex;
     Dexium::Core::Transform resTrans;
 
+    Dexium::Core::Camera2D camera;
+
+
+
 
     Game ()
         : ctx(EngineState::get())
     , window(ctx.getWindowContext())
-    , renderer(&window) {}
+    , renderer(&window){}
 
     void onInit() override {
         shader = Shader("Shaders/basic.vert", "Shaders/basic.frag");
@@ -75,6 +80,8 @@ public:
 
         resTrans.scale = glm::vec3(rm.get(resTex)->width, rm.get(resTex)->height, 0.f) * 4.f;
 
+        camera = Dexium::Core::Camera2D();
+
         //Create Mesh
         mesh = Dexium::Core::Mesh();
         mesh.vertices = {
@@ -96,13 +103,18 @@ public:
 
         mat.setUniform("u_Model", transform.ModelMatrix());
         mat.setUniform("u_Projection", proj);
+        mat.setUniform("u_View", camera.getViewMatrix());
 
         rm.get(resMat)->setUniform("u_Model", resTrans.ModelMatrix());
-        rm.get(resMat)->setUniform("u_Projection", proj);
+        //rm.get(resMat)->setUniform("u_Projection", proj);
 
         TraceLog(LogLevel::STATUS, "Begin output of Model Matrix (4x4)");
-        printMat4x4(transform.ModelMatrix());
+        printMat4x4(camera.transform.ModelMatrix());
         TraceLog(LogLevel::STATUS, "End output of Model Matrix (4x4)");
+
+        TraceLog(LogLevel::STATUS, "Begin output of View Matrix (4x4)");
+        printMat4x4(camera.getViewMatrix());
+        TraceLog(LogLevel::STATUS, "End output of View Matrix (4x4)");
 
         TraceLog(LogLevel::STATUS, "Begin output of Projection Matrix (4x4)");
         printMat4x4(proj);
