@@ -35,7 +35,7 @@ namespace Dexium::Core {
         Renderer::Viewport cachedVp = {};
     };
 
-    class Camera2D : public baseCamera {
+    class Camera2D final : public baseCamera {
         public:
             Camera2D();
 

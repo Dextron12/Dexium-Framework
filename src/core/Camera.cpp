@@ -5,8 +5,6 @@
 #include <core/Camera.hpp>
 #include <renderer/viewport.hpp>
 
-#include <Dexium.hpp>
-
 #include <glm/ext/matrix_clip_space.hpp>
 
 /*

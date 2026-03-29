@@ -23,13 +23,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/Renderer.hpp"
+#include "renderer/Renderer.hpp"
 #include "core/windowContext.hpp"
 
 using Shader = Dexium::Core::Shader;
 using VFS = Dexium::Core::VFS;
 using Material = Dexium::Core::Material;
-using Renderer = Dexium::Core::Renderer;
+//using Renderer = Dexium::Core::Renderer;
 
 using GameLayer = Dexium::Core::AppState;
 using AppLayer = Dexium::Core::AppState;
@@ -50,7 +50,7 @@ public:
     // Layer management
     static void addLayer(const std::string& layerID, std::unique_ptr<Dexium::Core::AppState> layer);
 
-    Dexium::RenderState::Viewport* getDefaultViewport();
+    Dexium::Renderer::Viewport* getDefaultViewport();
 
     // Logger Sub-system. Create a new logger with createLogger()
     std::unique_ptr<Dexium::Core::Logger> logger; // If no logger is present in debug build a panic msg will be printed before supression, otherwise in REL builds logs will automatically be suppressed
@@ -81,6 +81,6 @@ void clearColour(Colour colour);
 // outputStreams dictate where the logger outputs its messages, multiple outputs can be used.
 // format dictates the style, features and colour that the logs are output in
 // These define the state level operations of the Logger, but can also be indvidually overriden per log
-void createLogger(Dexium::Core::LoggerOutput outputStreams, Dexium::Core::LoggerFormat format);
+void createLogger(Dexium::Utils::LoggerOutput outputStreams, Dexium::Utils::LoggerFormat format);
 
 #endif

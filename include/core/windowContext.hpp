@@ -8,7 +8,7 @@
 #include <string_view>
 #include <memory>
 
-#include <core/BitwiseFlag.hpp>
+#include <utils/BitwiseFlag.hpp>
 #include <core/Signal.hpp>
 
 #include <glm/vec2.hpp>
@@ -17,7 +17,7 @@
 struct GLFWwindow;
 
 //Forward declare for RenderTarget
-namespace Dexium::RenderState {
+namespace Dexium::Renderer {
     class RenderTarget;
 }
 
@@ -58,8 +58,7 @@ namespace Dexium::Initializers {
 }
 
 
-namespace Dexium::Core {
-
+namespace Dexium::Utils {
     enum class WindowHints {
         Default = 0,
         Resizable = 1 << 0,
@@ -71,6 +70,9 @@ namespace Dexium::Core {
     struct EnableBitmaskOperators<WindowHints> {
         static constexpr bool value = true;
     };
+}
+
+namespace Dexium::Core {
 
     struct GLContextVersion {
         explicit GLContextVersion(int _major = 3, int _minor = 3)
@@ -82,7 +84,7 @@ namespace Dexium::Core {
 
     class WindowContext {
         public:
-        WindowContext(std::string_view windowName, int windowWidth, int windowHeight, WindowHints winFlags = WindowHints::Default, GLContextVersion glContextVersion = GLContextVersion{});
+        WindowContext(std::string_view windowName, int windowWidth, int windowHeight, Utils::WindowHints winFlags = Utils::WindowHints::Default, GLContextVersion glContextVersion = GLContextVersion{});
         ~WindowContext();
 
         [[nodiscard]] glm::ivec2 getCurrentSize() const;
@@ -90,7 +92,7 @@ namespace Dexium::Core {
 
         GLFWwindow* getWindow() const;
 
-        RenderState::RenderTarget& getRenderTarget();
+        Renderer::RenderTarget& getRenderTarget();
 
         bool shouldClose();
 
@@ -108,7 +110,7 @@ namespace Dexium::Core {
         static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
         //Sets the required state for the new window
-        void setWindowFlags(WindowHints winFlags, GLContextVersion ver);
+        void setWindowFlags(Utils::WindowHints winFlags, GLContextVersion ver);
 
         // Initalisers:
         //std::unique_ptr<Initializers::glfwInitializer> _glfwInit; // The EngineState should really own this and ensure its inited before window creation
@@ -122,7 +124,7 @@ namespace Dexium::Core {
         // Input system (per window)
         std::unique_ptr<Input> m_inputSys;
         //Default renderTarget(Sized to full window)
-        std::unique_ptr<RenderState::RenderTarget> m_defRenderTarget;
+        std::unique_ptr<Renderer::RenderTarget> m_defRenderTarget;
     };
 }
 

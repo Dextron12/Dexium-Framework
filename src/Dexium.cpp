@@ -34,7 +34,7 @@ void EngineState::shutdown() {
 }
 
 void EngineState::attachWindow(const std::string &windowTitle, int windowWidth, int windowHeight) {
-    get().windowContext = std::make_unique<Dexium::Core::WindowContext>(windowTitle, windowWidth, windowHeight, Dexium::Core::WindowHints{});
+    get().windowContext = std::make_unique<Dexium::Core::WindowContext>(windowTitle, windowWidth, windowHeight, Dexium::Utils::WindowHints{});
 }
 
 void EngineState::detachWindow() {
@@ -138,7 +138,7 @@ void EngineState::run() {
 
 
 
-void createLogger(Dexium::Core::LoggerOutput outStreams, Dexium::Core::LoggerFormat format) {
+void createLogger(Dexium::Utils::LoggerOutput outStreams, Dexium::Utils::LoggerFormat format) {
     //Fethc engine context
     auto& logSvs = Dexium::Core::LogService::use();
 
@@ -161,7 +161,7 @@ void createLogger(Dexium::Core::LoggerOutput outStreams, Dexium::Core::LoggerFor
 }
 
 
-Dexium::RenderState::RenderTarget* createDefaultRenderTarget() {
+Dexium::Renderer::RenderTarget* createDefaultRenderTarget() {
     //Grab engine context
     auto& ctx = EngineState::get();
 
@@ -169,7 +169,7 @@ Dexium::RenderState::RenderTarget* createDefaultRenderTarget() {
     return &ctx.getWindowContext().getRenderTarget();
 }
 
-Dexium::RenderState::Viewport* EngineState::getDefaultViewport() {
+Dexium::Renderer::Viewport* EngineState::getDefaultViewport() {
     // Really sia  bit of a hack!!
     // windowCOntext holds the default renderTarget and viewport for that window.
     // If were to implement multiple simultaneous windows, there needs to eb some way to differentiate which window is being used and polled for its viewport

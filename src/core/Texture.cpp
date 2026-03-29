@@ -21,17 +21,17 @@ Dexium::Core::Texture::~Texture() {
 
 void Dexium::Core::Texture::uploadParameters() const {
     //Filtering
-    if (hasFlag(flags, TexFlags::Linear)) {
-        GLint minFilter = hasFlag(flags, TexFlags::Mipmaps) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+    if (hasFlag(flags, Utils::TexFlags::Linear)) {
+        GLint minFilter = hasFlag(flags, Utils::TexFlags::Mipmaps) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    } else if (hasFlag(flags, TexFlags::Nearest)) {
+    } else if (hasFlag(flags, Utils::TexFlags::Nearest)) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
     // Wrapping
-    if (hasFlag(flags, TexFlags::Repeat)) {
+    if (hasFlag(flags, Utils::TexFlags::Repeat)) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     } else {
@@ -40,7 +40,7 @@ void Dexium::Core::Texture::uploadParameters() const {
     }
 
     // mIPMAPS
-    if (hasFlag(flags, TexFlags::Mipmaps)) {
+    if (hasFlag(flags, Utils::TexFlags::Mipmaps)) {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 }

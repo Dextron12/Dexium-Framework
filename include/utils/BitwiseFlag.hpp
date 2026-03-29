@@ -7,11 +7,13 @@
 
 #include <type_traits>
 
+#include <vector>
+
 // Defines a standard bitwise flag enumeration system
 // Is dynamically applied to various enums adn systems throughout Dexium
 // This header essentially defines a template for such a system
 
-namespace Dexium::Core {
+namespace Dexium::Utils {
 
     template<typename E>
     struct EnableBitmaskOperators {

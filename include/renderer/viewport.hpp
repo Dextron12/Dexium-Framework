@@ -12,7 +12,7 @@
 
 
 
-namespace Dexium::RenderState {
+namespace Dexium::Renderer {
 
     class Viewport {
     public:

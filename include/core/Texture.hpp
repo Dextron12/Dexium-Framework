@@ -5,12 +5,11 @@
 #ifndef DEXIUM_TEXTURE_HPP
 #define DEXIUM_TEXTURE_HPP
 
-#include <core/BitwiseFlag.hpp>
+#include <utils/BitwiseFlag.hpp>
 
 #include <filesystem>
 
-namespace Dexium::Core {
-
+namespace Dexium::Utils {
     // Bitwise enum class for flag operator representation of  possible Texture configurations
     enum class TexFlags : uint32_t {
         None = 0,
@@ -32,13 +31,16 @@ namespace Dexium::Core {
     struct EnableBitmaskOperators<TexFlags> {
         static constexpr bool value = true;
     };
+}
+
+namespace Dexium::Core {
 
 
 
     class Texture {
     public:
         unsigned int texID = 0;
-        TexFlags flags = TexFlags::None;
+        Utils::TexFlags flags = Utils::TexFlags::None;
 
         int width = 0, height = 0, nrChannels = 0;
 

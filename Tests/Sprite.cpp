@@ -16,7 +16,7 @@ class Game : public Dexium::Core::GameLayer {
 public:
     EngineState& ctx;
     Dexium::Core::WindowContext& window;
-    Renderer renderer;
+    //Renderer renderer;
 
     Shader shader;
     Dexium::Core::Mesh mesh;
@@ -38,8 +38,8 @@ public:
 
     Game ()
         : ctx(EngineState::get())
-    , window(ctx.getWindowContext())
-    , renderer(&window){}
+    , window(ctx.getWindowContext()) {}
+    //, renderer(&window){}
 
     void onInit() override {
         shader = Shader("Shaders/basic.vert", "Shaders/basic.frag");
@@ -66,12 +66,12 @@ public:
         resTrans.rotation = glm::vec3(0.f);
 
         //Set Texture filters
-        tex.flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Linear;
+        tex.flags |= Dexium::Utils::TexFlags::Nearest | Dexium::Utils::TexFlags::Linear;
         tex.load("Cute_Fantasy/Buildings/Buildings/Houses/Limestone/House_2_Limestone_Base_Black.png");
         mat.setTexture("uTexture", &tex);
 
         resTex = rm.store(std::make_unique<Dexium::Core::Texture>());
-        rm.get(resTex)->flags |= Dexium::Core::TexFlags::Nearest | Dexium::Core::TexFlags::Repeat;
+        rm.get(resTex)->flags |= Dexium::Utils::TexFlags::Nearest | Dexium::Utils::TexFlags::Repeat;
         rm.get(resTex)->load("Cute_Fantasy/Outdoor decoration/Well.png");
         rm.get(resMat)->setTexture("uTexture", rm.get(resTex));
 
@@ -129,9 +129,9 @@ public:
     }
 
     void onRender() override {
-        renderer.setClearColor({51,51,51,255});
+        //renderer.setClearColor({51,51,51,255});
 
-        renderer.submit({
+        /*renderer.submit({
         &window.getRenderTarget(),
         &mesh,
         &mat,
@@ -143,9 +143,9 @@ public:
         rm.get(resMesh),
         rm.get(resMat),
         &resTrans,
-        Dexium::Core::RenderPass::Transparent});
+        Dexium::Core::RenderPass::Transparent});*/
 
-        renderer.flush();
+        //renderer.flush();
     }
 
     void onShutdown() override {}
@@ -157,7 +157,7 @@ int main() {
     auto& ctx = EngineState::get();
 
     //Configure the engine logger system
-    createLogger(Dexium::Core::LoggerOutput::Stderr, Dexium::Core::LoggerFormat::PrettyPrint);
+    createLogger(Dexium::Utils::LoggerOutput::Stderr, Dexium::Utils::LoggerFormat::PrettyPrint);
 
     //Overwrites exec path to projectDir
     VFS::overwriteExecPath(VFS::getExecutablePath().parent_path());

@@ -15,7 +15,7 @@
 #include <fmt/color.h>
 
 // Templated Bitmask operator class
-#include <core/BitwiseFlag.hpp>
+#include <utils/BitwiseFlag.hpp>
 // Defines MonoClock, used for caching logs by time
 #include <utils/Time.hpp>
 
@@ -51,8 +51,7 @@ enum class LogLevel {
     FATAL
 };
 
-namespace Dexium::Core {
-
+namespace Dexium::Utils {
     enum class LoggerOutput {
         None = 0,
         Stdout = 1 << 0,
@@ -79,6 +78,9 @@ namespace Dexium::Core {
     struct EnableBitmaskOperators<LoggerFormat> {
         static constexpr bool value = true;
     };
+}
+
+namespace Dexium::Core {
 
     // Overwrite template to deduce if one bitwise obj can override the other
     /*enum class OverrideMode {
@@ -111,8 +113,8 @@ namespace Dexium::Core {
     class Logger {
     public:
         // State-level bitmasks
-        LoggerOutput outputs = LoggerOutput::Stderr; // By defualt, use Stderr as it flushes the buffer after every print on ALL systems
-        LoggerFormat format = LoggerFormat::None; // Leave the formating up to the usr
+        Utils::LoggerOutput outputs = Utils::LoggerOutput::Stderr; // By defualt, use Stderr as it flushes the buffer after every print on ALL systems
+        Utils::LoggerFormat format = Utils::LoggerFormat::None; // Leave the formating up to the usr
 
         Detail::TerminalColourOutputs TColours; // Only is used if LoggerFormat::PrettyPrint & (LoggerOutput::Stderr(default) | LoggerOutput::Stdout) is present
         std::string LogFolderName = "Logs"; // The name of the folder in where to store all logs. Allows overwriting per Logger
@@ -121,12 +123,12 @@ namespace Dexium::Core {
         float delayCahceTime = 1.5; // Measured in seconds, determines how long a messaged is delayed before outputting to the requested sinks, allows tracking multiples of same messages
 
         // The internal logging func to 'TraceLog' and handles all output logic for TraceLog(Which is a thin globally accessible wrapper of this func)
-        void log(LogLevel type, const std::string& msg, Override<LoggerOutput> l_output = Override<LoggerOutput>::Inherit(), Override<LoggerFormat> l_format = Override<LoggerFormat>::Inherit());
+        void log(LogLevel type, const std::string& msg, Override<Utils::LoggerOutput> l_output = Override<Utils::LoggerOutput>::Inherit(), Override<Utils::LoggerFormat> l_format = Override<Utils::LoggerFormat>::Inherit());
     private:
         // Records the logged stream to the last ln of the dated log file, or creates a new logfile if one didnt previsouly exist
         void writeLog(LogLevel type, const std::string& msg);
 
-        void writeToSinks(const std::string& logMsg, fmt::color color, LoggerOutput sinks);
+        void writeToSinks(const std::string& logMsg, fmt::color color, Utils::LoggerOutput sinks);
 
         std::unordered_map<std::string, LogCacheEntry> m_cachedLogs;
         Utils::MonoClock m_CacheClock;
@@ -168,7 +170,7 @@ void TraceLog(LogLevel type, fmt::format_string<Args...> fmt_str, Args&&... args
 
 // Provides OPTIONAL outoput overrides per log
 template<typename... Args>
-void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Core::LoggerOutput> output, fmt::format_string<Args...> fmt_str, Args&&... args) {
+void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Utils::LoggerOutput> output, fmt::format_string<Args...> fmt_str, Args&&... args) {
     auto& logSys = Dexium::Core::LogService::use();
     //Construct formatted msg
     if (logSys) {
@@ -191,7 +193,7 @@ void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Core::LoggerOutput> 
 
 // Provides OPTIONAL format overrides per log
 template<typename... Args>
-void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Core::LoggerFormat> format, fmt::format_string<Args...> fmt_str, Args&&... args) {
+void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Utils::LoggerFormat> format, fmt::format_string<Args...> fmt_str, Args&&... args) {
     auto& sysLog = Dexium::Core::LogService::use();
 
     if (sysLog) {
@@ -218,7 +220,7 @@ void TraceLog(LogLevel type, Dexium::Core::Override<Dexium::Core::LoggerFormat> 
 
 // Provides OPTIONAL input + format overrides per log
 template<typename... Args>
-void TraceLog(LogLevel type, Dexium::Core::LoggerOutput output, Dexium::Core::LoggerFormat format, fmt::format_string<Args...>fmt_str,  Args&&... args) {
+void TraceLog(LogLevel type, Dexium::Utils::LoggerOutput output, Dexium::Utils::LoggerFormat format, fmt::format_string<Args...>fmt_str,  Args&&... args) {
     auto& sysLog = Dexium::Core::LogService::use();
     if (sysLog) {
         std::string msg = fmt::format(fmt_str, std::forward<Args>(args)...);

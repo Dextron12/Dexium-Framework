@@ -7,7 +7,7 @@
 
 #include <renderer/viewport.hpp>
 
-namespace Dexium::RenderState {
+namespace Dexium::Renderer {
 
     // Eventually plan to add FBOs
     class RenderTarget {
@@ -23,4 +23,4 @@ namespace Dexium::RenderState {
     };
 }
 
-#endif //DEXIUM_RENDERSTATE_HPP
+#endif //DEXIUM_RENDERTARGET_HPP

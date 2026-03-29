@@ -13,17 +13,17 @@
 #include <fstream>
 
 
-void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<LoggerOutput> output, Override<LoggerFormat> format) {
+void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<Utils::LoggerOutput> output, Override<Utils::LoggerFormat> format) {
     // Deduce outputs
-    LoggerOutput finalOutputs = output.enabled ? output.value : outputs;
+    Utils::LoggerOutput finalOutputs = output.enabled ? output.value : outputs;
 
     // Ignore logging instance(or a single call) if no outputs are defined
-    if (finalOutputs == LoggerOutput::None) {
+    if (finalOutputs == Utils::LoggerOutput::None) {
         return;
     }
 
     // Deduce formatting scheme
-    LoggerFormat finalFormat = format.enabled ? format.value : this->format; // Use of `this` to access class member Logger::format is a little dubious
+    Utils::LoggerFormat finalFormat = format.enabled ? format.value : this->format; // Use of `this` to access class member Logger::format is a little dubious
 
     // Stores the final/resultant log msg
     std::string finalLog;
@@ -35,7 +35,7 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
     // So this will strip any hard-written tags from the logs (usually internal system locations from where the log is being emitted from)
 
     //LoggerFormat::StripAllTags functionality
-    if (hasFlag(finalFormat, LoggerFormat::StripAllTags)) {
+    if (hasFlag(finalFormat, Utils::LoggerFormat::StripAllTags)) {
         // WARNING: This a simple char stripper, it can break on nested lookups chars('[' | ']')
         bool inside = false;
         for (char c : msg) {
@@ -59,9 +59,9 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
         finalLog = msg;
     }
 
-    if (hasFlag(finalFormat, LoggerFormat::PrettyPrint)) {
+    if (hasFlag(finalFormat, Utils::LoggerFormat::PrettyPrint)) {
         // Only allow colour definitions when LoggerOutput = Stderr(defualt) or Stdout. Colours cannot be defined in file & DevTerminal will handle its own colours
-        if (hasFlag(finalOutputs, LoggerOutput::Stderr) || hasFlag(finalOutputs, LoggerOutput::Stdout)) {
+        if (hasFlag(finalOutputs, Utils::LoggerOutput::Stderr) || hasFlag(finalOutputs, Utils::LoggerOutput::Stdout)) {
             // This is what makes fmt so cool!!
 
             switch (type) {
@@ -84,7 +84,7 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
         }
     }
 
-    if (hasFlag(finalFormat, LoggerFormat::PrefixLogLevels)) {
+    if (hasFlag(finalFormat, Utils::LoggerFormat::PrefixLogLevels)) {
 
         // Compile-time array for faster output and less verbosity
         static constexpr std::array<std::string_view, 5> prefixes = {
@@ -102,7 +102,7 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
     // Check if LoggerFormat::ImmediateMode is disabled
     // If so, cache log and skip outputting
     m_CacheClock.update();
-    if (!hasFlag(finalFormat, LoggerFormat::ImmediateMode)) {
+    if (!hasFlag(finalFormat, Utils::LoggerFormat::ImmediateMode)) {
         auto now = m_CacheClock.elapsed();
 
         // Cleanup expired entries
@@ -151,15 +151,15 @@ void Dexium::Core::Logger::log(LogLevel type, const std::string &msg, Override<L
 
 }
 
-void Dexium::Core::Logger::writeToSinks(const std::string &logMsg, fmt::color color, LoggerOutput sinks) {
+void Dexium::Core::Logger::writeToSinks(const std::string &logMsg, fmt::color color, Utils::LoggerOutput sinks) {
     // Formatting complete, output to ALL provided output streams
-    if (hasFlag(sinks, LoggerOutput::Stderr)) {
+    if (hasFlag(sinks, Utils::LoggerOutput::Stderr)) {
         fmt::print(stderr, fg(color), logMsg + "\n");
     }
-    if (hasFlag(sinks, LoggerOutput::Stdout)) {
+    if (hasFlag(sinks, Utils::LoggerOutput::Stdout)) {
         fmt::print(stdout, fg(color), logMsg + "\n");
     }
-    if (hasFlag(sinks, LoggerOutput::DevConsole)) {
+    if (hasFlag(sinks, Utils::LoggerOutput::DevConsole)) {
         // Currently No DevConsole impelented, relog msg onto Stderr and provide warning
         //TraceLog(LogLevel::ERROR, LoggerOutput::Stderr, "[Logger]: DevConsole si currently not implemented. Falling back to Stderr as the output");
         fmt::print(stderr, fg(TColours.error), "[Logger]: DevConsole is currently not implemented. falling back to Stderr(Default)");
@@ -167,7 +167,7 @@ void Dexium::Core::Logger::writeToSinks(const std::string &logMsg, fmt::color co
         //TraceLog(type, LoggerOutput::Stderr, finalFormat, msg);
         fmt::print(stderr, fg(color), logMsg + "\n");
     }
-    if (hasFlag(sinks, LoggerOutput::File)) {
+    if (hasFlag(sinks, Utils::LoggerOutput::File)) {
         //this->writeLog(type, finalLog);
     }
     // No need to check for LoggerOutput::None, this is done at the start of the fn as an early exit(Logging is ingored on this flag)

@@ -12,8 +12,6 @@
 
 #include <stdexcept> // Used to throw runtime_error on core library failure
 
-#include "core/Controller.hpp"
-
 namespace Dexium::Initializers {
 
     glfwInitializer::glfwInitializer() {
@@ -67,7 +65,7 @@ namespace Dexium::Private::Signals {
 
 
 namespace Dexium::Core {
-    void WindowContext::setWindowFlags(WindowHints winFlags, GLContextVersion ver) {
+    void WindowContext::setWindowFlags(Utils::WindowHints winFlags, GLContextVersion ver) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ver.major);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ver.minor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -75,7 +73,7 @@ namespace Dexium::Core {
         //glfwWindowHint(GLFW_)
     }
 
-    WindowContext::WindowContext(std::string_view windowName, int windowWidth, int windowHeight, WindowHints winFlags, GLContextVersion glContextVersion) {
+    WindowContext::WindowContext(std::string_view windowName, int windowWidth, int windowHeight, Utils::WindowHints winFlags, GLContextVersion glContextVersion) {
         setWindowFlags(winFlags, glContextVersion);
 
         //Create window/conext
@@ -96,8 +94,8 @@ namespace Dexium::Core {
         m_windowSize_old = m_windowSize;
 
         //Create defauklt renderTarget(Targets the entire window)
-        m_defRenderTarget = std::make_unique<RenderState::RenderTarget>(
-            RenderState::Viewport{0,0,m_windowSize.x,m_windowSize.y}
+        m_defRenderTarget = std::make_unique<Renderer::RenderTarget>(
+            Renderer::Viewport{0,0,m_windowSize.x,m_windowSize.y}
             );
 
         //Init the window wide input system
@@ -125,7 +123,7 @@ namespace Dexium::Core {
         return m_window;
     }
 
-    RenderState::RenderTarget& WindowContext::getRenderTarget() {
+    Renderer::RenderTarget& WindowContext::getRenderTarget() {
         return *m_defRenderTarget;
     }
 

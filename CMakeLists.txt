@@ -21,7 +21,8 @@ file (GLOB_RECURSE DEXIUM_HEADERS CONFIGURE_DEPENDS include/*.hpp)
 add_subdirectory(third_party/fmt)
 
 # --- STB_Image Inclusion (Used for loading images into Dexium)
-add_library(stb_image INTERFACE)
+add_library(stb_image INTERFACE
+        include/renderer/Command.hpp)
 target_include_directories(stb_image INTERFACE third_party/STB/) # Header only
 
 # Validate the live test
