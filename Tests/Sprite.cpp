@@ -10,13 +10,17 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-void printMat4x4(const glm::mat4& mat);
+#include <renderer/RenderPass.hpp>
+
+void printMat4x4(const std::string& matName, const glm::mat4& mat);
 
 class Game : public Dexium::Core::GameLayer {
 public:
     EngineState& ctx;
     Dexium::Core::WindowContext& window;
-    //Renderer renderer;
+    Dexium::Renderer::Renderer renderer;
+
+    Dexium::Renderer::RenderPass pass;
 
     Shader shader;
     Dexium::Core::Mesh mesh;
@@ -82,6 +86,14 @@ public:
 
         camera = Dexium::Core::Camera2D();
 
+        pass = Dexium::Renderer::RenderPass(&window.getRenderTarget(), &camera);
+        pass.setClearColor(Color::fromBytes(81, 81, 81, 255));
+        pass.plpState.Projection_uName = "u_Projection";
+        pass.plpState.View_uName = "u_View";
+        pass.plpState.Model_uName = "u_Model";
+
+        pass.plpState.blending = true;
+
         //Create Mesh
         mesh = Dexium::Core::Mesh();
         mesh.vertices = {
@@ -98,6 +110,11 @@ public:
         mesh.indexCount = 6;
         mesh.buildMesh();
 
+        pass.storeCommand(&mesh, &mat, &transform);
+
+        pass.storeCommand(rm.get(resMesh), rm.get(resMat), &resTrans);
+
+        /*
         auto& vp = window.getRenderTarget().m_viewport;
         auto proj = glm::ortho(static_cast<float>(vp.x), static_cast<float>(vp.w), static_cast<float>(vp.h), static_cast<float>(vp.y), -1.f, 1.f);
 
@@ -107,18 +124,11 @@ public:
 
         rm.get(resMat)->setUniform("u_Model", resTrans.ModelMatrix());
         //rm.get(resMat)->setUniform("u_Projection", proj);
+        */
 
-        TraceLog(LogLevel::STATUS, "Begin output of Model Matrix (4x4)");
-        printMat4x4(camera.transform.ModelMatrix());
-        TraceLog(LogLevel::STATUS, "End output of Model Matrix (4x4)");
-
-        TraceLog(LogLevel::STATUS, "Begin output of View Matrix (4x4)");
-        printMat4x4(camera.getViewMatrix());
-        TraceLog(LogLevel::STATUS, "End output of View Matrix (4x4)");
-
-        TraceLog(LogLevel::STATUS, "Begin output of Projection Matrix (4x4)");
-        printMat4x4(proj);
-        TraceLog(LogLevel::STATUS, "End output of Projection Matrix (4x4)");
+        printMat4x4("Projection", camera.getProjectionMatrix(window.getRenderTarget().m_viewport));
+        printMat4x4("View", camera.getViewMatrix());
+        printMat4x4("Model", camera.transform.ModelMatrix());
     }
 
     void onUpdate() override {
@@ -130,6 +140,8 @@ public:
 
     void onRender() override {
         //renderer.setClearColor({51,51,51,255});
+
+        renderer.submit(&pass);
 
         /*renderer.submit({
         &window.getRenderTarget(),
@@ -145,7 +157,7 @@ public:
         &resTrans,
         Dexium::Core::RenderPass::Transparent});*/
 
-        //renderer.flush();
+        renderer.flush();
     }
 
     void onShutdown() override {}
@@ -173,11 +185,14 @@ int main() {
 }
 
 
-void printMat4x4(const glm::mat4& mat) {
+void printMat4x4(const std::string& matName, const glm::mat4& mat) {
+    fmt::print(stderr, fg(fmt::color::lime_green), fmt::format(" --- Begin Output of {} (4x4 Mat) ---\n", matName));
     for (int col = 0; col < 4; col++) {
         for (int row = 0; row < 4; row++) {
-            fmt::print(stderr, "{} ", mat[col][row]);
+            fmt::print(stderr, fg(fmt::color::lime_green), "{} ", mat[col][row]);
         }
         fmt::print(stderr, "\n");
     }
+    fmt::print(stderr, fg(fmt::color::lime_green), fmt::format(" --- End Output of {} (4x4 Mat) ---\n\n", matName));
+
 }

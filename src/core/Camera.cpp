@@ -67,7 +67,7 @@ namespace Dexium::Core {
         // Check if Projection matrix needs to be re-calculated
         if (vp != cachedVp) {
             // Calculate new projection matrix:
-            projectionMatrix = glm::ortho(static_cast<float>(vp.x), static_cast<float>(vp.w), static_cast<float>(vp.h), static_cast<float>(vp.y), 0.1f, 1.f);
+            projectionMatrix = glm::ortho(static_cast<float>(vp.x), static_cast<float>(vp.w), static_cast<float>(vp.h), static_cast<float>(vp.y), -1.f, 1.f);
             cachedVp = vp;
         }
 

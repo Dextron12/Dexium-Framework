@@ -40,7 +40,7 @@ namespace Dexium::Renderer {
 
     class Renderer {
     public:
-        Renderer(Core::WindowContext* windowCtx);
+        Renderer();
 
         // Make Renderer non-copyable BUT movable.
         // Movable renderer is needed becasue AppLayer ustes std::move, meaning all variables scoped within it also msut be movable
@@ -71,8 +71,8 @@ namespace Dexium::Renderer {
 
         int pollHW_MaxTexSlots() const;
 
-        // Prepares a command(Model) for rendering
-        void submit(const RenderPass& pass);
+        // Prepares a batched pass of commands for rendering (A set of batched models in their configured GL state)
+        void submit(RenderPass* pass);
 
         // Updates the renderer (Call this ONCE at the end of each render frame)
         void flush();
@@ -87,14 +87,15 @@ namespace Dexium::Renderer {
 
         //Store active viewport
         Dexium::Renderer::Viewport m_activeViewport = {};
+        // Store active camera
+        Dexium::Core::baseCamera* m_activeCamera = nullptr;
         //Store active shader
         int m_activeShader = 0;
         //Store next texture slot
         GLenum m_activeTexture = 1; // 0 reserved for fallback texture
 
-
-        // Remove default construciton of Renderer
-        Renderer() = delete;
+        //Store vec of passes. Cleared at end of Renderer::flush
+        std::vector<RenderPass*> m_renderPasses;
     };
 
 

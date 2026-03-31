@@ -11,6 +11,8 @@
 
 #include <glad/gl.h>
 
+#include <renderer/Command.hpp>
+
 // forward declares
 namespace Dexium::Core {
     class baseCamera;
@@ -45,16 +47,20 @@ namespace Dexium::Utils {
 
 namespace Dexium::Renderer {
     //Forward-declare for RenderCommand (Renderer::Command)
-    struct Command;
+    //struct Command;
     //Forward-declare for Renderer (Renderer::Renderer)
     class Renderer;
 
     // The state-level data that configures GL state per render pass
     class PipelineState {
     public:
-        bool DepthTest = true;
-        bool DepthWrite = true;
+        bool DepthTest = true; // Essentially about visability of pixels. Think of it as the culling space
+        bool DepthWrite = true; // Decides if its depth result effects future fragments
         bool blending = false;
+
+        std::string Projection_uName; // The uniform name for the Projection(mat4) in the shader program
+        std::string View_uName; // The uniform name for the View(mat4) in the shader program
+        std::string Model_uName; // The uniform name for Model(mat4) in the shader program
 
         GLenum depthFunc = GL_LESS;
 
@@ -72,14 +78,14 @@ namespace Dexium::Renderer {
     class RenderPass {
     public:
         RenderPass(RenderTarget* renderTarget, Core::baseCamera* camera);
-        RenderPass() = delete;
+        RenderPass() = default; // SHOULD ONLY BE USED FOR TYPE INITIALIZATION!!
 
         void storeCommand(Core::Mesh* mesh, Core::Material* material, Core::Transform* transform);
         void storeCommand(const Command& cmd);
 
         void clearCommands();
 
-        void setClearColor(Colour& color);
+        void setClearColor(const Colour color);
 
         std::string passName;
 

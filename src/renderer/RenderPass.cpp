@@ -26,7 +26,7 @@ namespace Dexium::Renderer {
         }
     }
 
-    void RenderPass::setClearColor(Colour& color) {
+    void RenderPass::setClearColor(const Colour color) {
         auto& state = plpState;
 
         state.passColor = color;
