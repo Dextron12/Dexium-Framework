@@ -21,6 +21,7 @@ namespace Dexium::Renderer {
 
     Renderer::Renderer() {
         // Poll GL for max supported textures for active device
+        m_maxTextureSlots = 0;
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &m_maxTextureSlots); // I believe this polls how many active texture slots can be used within the FRAGMENT shader
 
         // Resize the cached texture array to support max slots
@@ -67,13 +68,14 @@ namespace Dexium::Renderer {
         // Should only be reading the pass data, so a iterate for-auto loop will guarantee this
         for (const auto& pass : m_renderPasses) {
             // Internal buffer
-            GLenum scrBuffers;
+            GLenum scrBuffers = 0; // Causes UB if not defined
+
             // Clear screen if enabled
             if (Utils::hasFlag(pass->plpState.buffers, Utils::BufferTarget::Color)) {
                 const auto& col = pass->plpState.passColor;
-                glClearColor(col.r(), col.r(), col.b(), col.a());
+                glClearColor(col.r(), col.g(), col.b(), col.a());
 
-                scrBuffers = GL_COLOR_BUFFER_BIT;
+                scrBuffers |= GL_COLOR_BUFFER_BIT;
             }
             if (Utils::hasFlag(pass->plpState.buffers, Utils::BufferTarget::Depth)) {
                 // Depth enabled
@@ -88,7 +90,7 @@ namespace Dexium::Renderer {
                 }
 
                 //Clear depth buffer
-                scrBuffers = GL_DEPTH_BUFFER_BIT;
+                scrBuffers |= GL_DEPTH_BUFFER_BIT;
             } else {
                 glDisable(GL_DEPTH_TEST);
             }
@@ -112,10 +114,11 @@ namespace Dexium::Renderer {
                 glViewport(vp.x, vp.y, vp.w, vp.h);
             }
 
-            // Configure the camera and Projection & View amtrices for pass
+            // Configure the Camera, Projection & View matrices for pass
             if (pass->camera != m_activeCamera) {
                 // Swap camera out
                 m_activeCamera = pass->camera;
+                // Currently not really needed? Proceeding code always uses pass->camera OR pass->VP
             }
 
             // Refs to Proj & View matrices
@@ -126,18 +129,23 @@ namespace Dexium::Renderer {
             std::sort(pass->m_commands.begin(), pass->m_commands.end(),
                 [&state = pass->plpState](const Command& a, const Command& b) {
                     // Sort by shader
-                    if (a.material->shader < b.material->shader)
+                    if (a.material->shader != b.material->shader)
                         return a.material->shader < b.material->shader;
 
+                    // Sort by Z buffer if blending enabled
                     if (state.blending) {
                         // Sort by Z order (Back to front ordering)
-                        if (a.transform->position.z > b.transform->position.z)
+                        if (a.transform->position.z != b.transform->position.z)
                             return a.transform->position.z > b.transform->position.z;
                     }
 
                     // fallback sort: By material
                     return a.material < b.material;
                 });
+
+            // clear texture batch lookup
+            m_batchLookup.clear();
+            m_nextTextureSlot = 1; // 0 is reserved for fallback texture
 
             // Now iterate over the comms
 
@@ -170,9 +178,10 @@ namespace Dexium::Renderer {
                     }
                 }
 
-                // clear texture batch lookup
-                m_batchLookup.clear();
-                m_nextTextureSlot = 1; // 0 is reserved for fallback texture
+                // proceeding code sets MVP + Material uniforms(if material ahs changed)
+                // we, could further optimise by checking if the MVP matrices have changed
+                // but we can assume that View will change almsot every frame(whenever the camera mvoes)
+                // and Model may change frequently if batching, instancing
 
                 // Bind textures
                 auto& textures = cmd.material->getTextures();
@@ -218,15 +227,17 @@ namespace Dexium::Renderer {
                     TraceLog(LogLevel::WARNING, "[Renderer]: No uniform name for Model is configured!");
                 }
 
-                // Now set material property uniforms
-                for (const auto& pair : cmd.material->getUniforms()) {
-                    const auto& uniformName = pair.first;
-                    const auto& variant = pair.second;
+                // Now set material property uniforms (If, material has changed)
+                if (m_activeMaterial != cmd.material) {
+                    for (const auto& pair : cmd.material->getUniforms()) {
+                        const auto& uniformName = pair.first;
+                        const auto& variant = pair.second;
 
-                    // Visit the raw varient value:
-                    std::visit([shader = cmd.material->shader, name = uniformName](auto&& value) {
-                        shader->setUniform(name, value);
-                    }, variant);
+                        // Visit the raw varient value:
+                        std::visit([shader = cmd.material->shader, name = uniformName](auto&& value) {
+                            shader->setUniform(name, value);
+                        }, variant);
+                    }
                 }
 
                 // Begin drawing
@@ -241,9 +252,12 @@ namespace Dexium::Renderer {
                     glDrawElements(cmd.mesh->drawMode, cmd.mesh->indexCount, GL_UNSIGNED_INT, 0);
                 } else {
                     // Vertex drawing mode
-                    glDrawArrays(cmd.mesh->drawMode, 0, cmd.mesh->indexCount);
+                    glDrawArrays(cmd.mesh->drawMode, 0, cmd.mesh->vertexCount);
                 }
             }
+
+            // Force clear the commands from each pass (to rpevent stale state)
+            pass->clearCommands();
         }
 
         glDisable(GL_BLEND);

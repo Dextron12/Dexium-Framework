@@ -91,6 +91,8 @@ namespace Dexium::Renderer {
         Dexium::Core::baseCamera* m_activeCamera = nullptr;
         //Store active shader
         int m_activeShader = 0;
+        // Store active material
+        Dexium::Core::Material* m_activeMaterial = nullptr;
         //Store next texture slot
         GLenum m_activeTexture = 1; // 0 reserved for fallback texture
 

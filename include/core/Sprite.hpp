@@ -5,22 +5,14 @@
 #ifndef DEXIUM_SPRITE_HPP
 #define DEXIUM_SPRITE_HPP
 
-#include <core/VFS.hpp>
+#include <core/Model.hpp>
+#include <core/ResourcePool.hpp>
 
-#include <memory>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include <renderer/RenderPass.hpp>
 
-#include <renderer/RenderTarget.hpp>
-#include <core/Texture.hpp>
+#include <variant>
 
 namespace Dexium::Core {
-    //Forward declares
-    class Material;
-    class Mesh;
-    class Transform;
-    class Renderer;
 
     /*
      *In my infinite escape to avoid an AssetManager(This very engine used to have one, before it burnt me)
@@ -43,29 +35,53 @@ namespace Dexium::Core {
      *  The Asset system is OPTIONAL infrastructure, not a core dependency
      */
 
-    class Sprite {
-    public:
-        Sprite() = default;
-        //Sprite is a renderable(Non-owning manager) of lower level resoruces
+    namespace Dexium::Core {
 
-        Texture* transform = nullptr;
-        Mesh* mesh = nullptr;
-        Material* material = nullptr;
+        std::variant<ResourceHandle<Mesh>, Mesh*> MeshVariant;
+        // Generates a wuad mesh with specified params and resolve stexture from ResourceManager or directly move constructs from a temp
+        class Sprite{
+        public:
 
-        RenderState::RenderTarget* rendrTgt = nullptr; // Non-owning, by default uses window-wide renderTarget
+            //void pushDrawCmd(Renderer::RenderPass* pass,glm::vec3& pos);
 
-        glm::vec3 position; // Pos (in screen space) of where to render Sprite
-        glm::vec2 scaleMultiplier; // Provides multiplicative scaling of texture. (Texture scaling is internally done regardless)
-        float rotation; // How many degrees to rotate the Sprite (+: Clockwise Rot, -: Anticlockwise Rot)
+            const glm::vec3& getPos();
 
+        protected:
 
-        void load(const std::filesystem::path& texturePath, TexFlags imgFlags);
-    private:
-        std::unique_ptr<Transform> transform;
+            Sprite() = default;
 
 
 
-    };
+
+        };
+
+
+        /*
+// Constructs Sprite from pre-defined shader and texture
+Sprite(const ResourceManager& rm, ResourceHandle<Texture> textureHandle, ResourceHandle<Shader> shaderProgram);
+
+// Constructs Sprite from pre-defined set of textures(vec) and shader
+Sprite(const ResourceManager& rm, std::vector<ResourceHandle<Texture>> textures, ResourceHandle<Shader> shaderProgram);
+
+// Takes ownership of tempory Texture{}(Stores it in the resourceManager), shader lidfetime needs to be managed elsewhere
+Sprite(const ResourceManager& rm, Texture tex, Shader* shader);
+
+// Takes ownership of a vec of temp Tesxture{}s (Stores entire set in rm), Shader lifetime managed elsewhere
+Sprite(const ResourceManager& rm, const std::vector<Texture>& textures, Shader* shader);
+
+// Takes ownership of tempory Texture{} and handle to shader
+Sprite(const ResourceManager& rm, Texture tex, ResourceHandle<Shader> shaderProgram);
+
+Sprite(const ResourceManager& rm, const std::vector<Texture>& textures, ResourceHandle<Shader> shaderProgram);
+*/
+
+        // Construct Sprite from predefined sahder & texture
+        [[nodiscard]] Sprite createSprite(const ResourceManager& rm, ResourceHandle<Shader> shaderProgram, ResourceHandle<Texture> tex);
+        // Construct Sprite from pre-defined shader & vec of textures
+        [[nodiscard]] Sprite createSprite(const ResourceManager& rm, ResourceHandle<Shader> shaderProgram, const std::vector<ResourceHandle<Texture>>& textures);
+
+
+    }
 }
 
 #endif //DEXIUM_SPRITE_HPP

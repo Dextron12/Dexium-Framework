@@ -8,9 +8,10 @@
 
 #include <core/ResourcePool.hpp>
 
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <renderer/RenderPass.hpp>
+#include <renderer/Presets.hpp>
+
+#include <core/Model.hpp>
 
 void printMat4x4(const std::string& matName, const glm::mat4& mat);
 
@@ -37,6 +38,8 @@ public:
 
     Dexium::Core::Camera2D camera;
 
+    Dexium::Core::Model house;
+
 
 
 
@@ -46,7 +49,7 @@ public:
     //, renderer(&window){}
 
     void onInit() override {
-        shader = Shader("Shaders/basic.vert", "Shaders/basic.frag");
+        shader = Shader("Shaders/basicVert.glsl", "Shaders/basicFrag.glsl");
         shader.compile();
         mat.shader = &shader;
 
@@ -70,14 +73,20 @@ public:
         resTrans.rotation = glm::vec3(0.f);
 
         //Set Texture filters
-        tex.flags |= Dexium::Utils::TexFlags::Nearest | Dexium::Utils::TexFlags::Linear;
+        tex.flags |= Dexium::Utils::TexFlags::Nearest | Dexium::Utils::TexFlags::ClampEdge;
         tex.load("Cute_Fantasy/Buildings/Buildings/Houses/Limestone/House_2_Limestone_Base_Black.png");
         mat.setTexture("uTexture", &tex);
 
         resTex = rm.store(std::make_unique<Dexium::Core::Texture>());
-        rm.get(resTex)->flags |= Dexium::Utils::TexFlags::Nearest | Dexium::Utils::TexFlags::Repeat;
+        rm.get(resTex)->flags |= Dexium::Utils::TexFlags::Linear | Dexium::Utils::TexFlags::Linear;
         rm.get(resTex)->load("Cute_Fantasy/Outdoor decoration/Well.png");
         rm.get(resMat)->setTexture("uTexture", rm.get(resTex));
+
+        auto handle = Dexium::Core::ResourceHandle<Dexium::Core::Texture>();
+        auto test = rm.get(handle);
+        if (test == nullptr) {
+            TraceLog(LogLevel::ERROR, "Test handle is invalid, Fetched no content");
+        }
 
         //Scale model to texture size
         transform.scale = glm::vec3(tex.width, tex.height, 0.f);
@@ -86,13 +95,24 @@ public:
 
         camera = Dexium::Core::Camera2D();
 
+        house = Dexium::Core::Model(
+            *Dexium::Core::createMesh(Dexium::Core::MeshType::Mesh2D::Rectangle),
+            Dexium::Core::Material(),
+            Dexium::Core::Transform({450.f, 350.f, 0.f}, {0.f, 0.f, -45.f}, {tex.width, tex.height, 0.f})
+            );
+        house.m_Material->shader = &shader;
+        house.m_Material->setTexture("uTexture", &tex);
+
+        /*
         pass = Dexium::Renderer::RenderPass(&window.getRenderTarget(), &camera);
-        pass.setClearColor(Color::fromBytes(81, 81, 81, 255));
+        pass.setClearColor(Color::fromBytes(47, 47, 47, 255));
         pass.plpState.Projection_uName = "u_Projection";
         pass.plpState.View_uName = "u_View";
         pass.plpState.Model_uName = "u_Model";
 
         pass.plpState.blending = true;
+        */
+        pass = Dexium::Renderer::Presets::TransparentPass(&window.getRenderTarget(), &camera);
 
         //Create Mesh
         mesh = Dexium::Core::Mesh();
@@ -140,6 +160,12 @@ public:
 
     void onRender() override {
         //renderer.setClearColor({51,51,51,255});
+
+        pass.storeCommand(&mesh, &mat, &transform); // House
+        pass.storeCommand(rm.get(resMesh), rm.get(resMat), &resTrans); // Well
+
+        // Model driven:
+        pass.storeCommand(house.m_Mesh.get(), house.m_Material.get(), house.m_Transform.get());
 
         renderer.submit(&pass);
 
